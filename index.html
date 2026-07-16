@@ -3,62 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Atlas Financial Intelligence</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- We will use standard CSS for styling instead of Tailwind's script -->
+    <style>
+        body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 250px; border-right: 1px solid #333; padding: 20px; }
+        .main { flex: 1; padding: 40px; }
+        .card { background: #111; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .text-emerald { color: #10b981; }
+    </style>
 </head>
-<body class="bg-black text-white">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState } = React;
-        const { LayoutDashboard, Wallet, TrendingUp, Bot, Settings } = lucide;
-
-        function App() {
-            return (
-                <div className="flex h-screen bg-black">
-                    {/* Sidebar */}
-                    <div className="w-64 border-r border-white/10 p-6">
-                        <h1 className="text-2xl font-bold mb-10 text-emerald-500">ATLAS</h1>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-emerald-400">
-                                <LayoutDashboard size={20} /> Dashboard
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-500">
-                                <Wallet size={20} /> Profile
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-500">
-                                <Bot size={20} /> Finn AI
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Main Content */}
-                    <div className="flex-1 p-10">
-                        <h2 className="text-3xl font-light mb-8">Financial Overview</h2>
-                        <div className="grid grid-cols-3 gap-6">
-                            <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
-                                <p className="text-gray-400">Net Worth</p>
-                                <h3 className="text-4xl font-bold mt-2">₹1,24,50,000</h3>
-                            </div>
-                            <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
-                                <p className="text-gray-400">Health Score</p>
-                                <h3 className="text-4xl font-bold mt-2">88/100</h3>
-                            </div>
-                            <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
-                                <p className="text-gray-400">Monthly Growth</p>
-                                <h3 className="text-4xl font-bold mt-2 text-emerald-500">+12.4%</h3>
-                            </div>
-                        </div>
-                    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h1 style="color: #10b981;">ATLAS</h1>
+            <p>Dashboard</p>
+            <p>Profile</p>
+            <p>Finn AI</p>
+        </div>
+        <div class="main">
+            <h2>Financial Overview</h2>
+            <div class="grid">
+                <div class="card">
+                    <p>Net Worth</p>
+                    <h3 style="font-size: 24px;">₹1,24,50,000</h3>
                 </div>
-            );
-        }
+                <div class="card">
+                    <p>Health Score</p>
+                    <h3 style="font-size: 24px;">88/100</h3>
+                </div>
+                <div class="card">
+                    <p>Growth</p>
+                    <h3 style="font-size: 24px;" class="text-emerald">+12.4%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+    <!-- We will skip React for a moment just to see the page render -->
+    <script>
+        console.log("Atlas is running natively.");
     </script>
 </body>
 </html>
