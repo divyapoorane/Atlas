@@ -1,167 +1,3235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atlas Intelligence Engine</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0b0f19; color: #f3f4f6; padding: 24px; min-height: 100vh; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 16px; margin-bottom: 24px; }
-        h1 { font-size: 24px; color: #ffffff; }
-        .subtitle { font-size: 12px; color: #9ca3af; margin-top: 4px; }
-        .nav-btn { backgroundColor: #1f2937; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-left: 8px; font-weight: 500; }
-        .nav-btn.active { background-color: #3b82f6; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        .card { background-color: #111827; border-radius: 12px; padding: 24px; border: 1px solid #1f2937; }
-        .metric-val { font-size: 36px; font-weight: bold; color: #10b981; margin: 12px 0; }
-        .progress-bar { background-color: #1f2937; height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-fill { background-color: #10b981; width: 82%; height: 100%; }
-        .chat-container { display: flex; flex-direction: column; height: 350px; }
-        .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-        .message { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 14px; }
-        .message.assistant { background-color: #1f2937; align-self: flex-start; }
-        .message.user { background-color: #2563eb; align-self: flex-end; }
-        .chat-form { display: flex; gap: 8px; }
-        .input-field { flex: 1; background-color: #1f2937; border: 1px solid #374151; border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 14px; }
-        .input-field:focus { outline: none; border-color: #3b82f6; }
-        .btn-submit { background-color: #2563eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .btn-submit:hover { background-color: #1d4ed8; }
-        .hidden { display: none !important; }
-        label { display: block; font-size: 14px; color: #9ca3af; margin-bottom: 6px; }
-        textarea.input-field { min-height: 120px; resize: vertical; }
-        .btn-wide { width: 100%; background-color: #10b981; padding: 12px; font-weight: bold; margin-top: 12px; }
-        .btn-wide:hover { background-color: #059669; }
-        .result-box { margin-top: 16px; padding: 12px; background-color: #1f2937; border-radius: 6px; font-size: 14px; border-left: 4px solid #3b82f6; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Atlas — AI Financial Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+        colors: {
+          midnight: { 950: '#05070d', 900: '#0a0e1a', 800: '#0f1524', 700: '#151c2e' },
+          graphite: { 900: '#0d1220', 800: '#131a2b', 700: '#1a2238', 600: '#222c47' },
+          emerald: { DEFAULT: '#10b981', light: '#34d399', dark: '#059669', glow: 'rgba(16,185,129,0.4)' },
+          gold: { DEFAULT: '#d4af37', light: '#f0c654', dark: '#b8941f' }
+        },
+        boxShadow: {
+          'glow-emerald': '0 0 40px rgba(16,185,129,0.25)',
+          'glow-gold': '0 0 40px rgba(212,175,55,0.25)',
+          'premium': '0 20px 60px -15px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset',
+          'card': '0 10px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset'
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { background: #05070d; color: #e5e7eb; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #0a0e1a; }
+  ::-webkit-scrollbar-thumb { background: #1a2238; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #222c47; }
+
+  .glass {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  }
+  .glass-strong {
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .gradient-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  .gradient-gold {
+    background: linear-gradient(135deg, #f0c654 0%, #d4af37 50%, #b8941f 100%);
+  }
+  .gradient-mesh {
+    background:
+      radial-gradient(at 20% 20%, rgba(16,185,129,0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(212,175,55,0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgba(59,130,246,0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(168,85,247,0.08) 0px, transparent 50%);
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .noise::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.03; pointer-events: none;
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 20px rgba(16,185,129,0.3); } 50% { box-shadow: 0 0 40px rgba(16,185,129,0.6); } }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slide-in-right { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  @keyframes orbit { from { transform: rotate(0deg) translateX(120px) rotate(0deg); } to { transform: rotate(360deg) translateX(120px) rotate(-360deg); } }
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes typing { from { width: 0 } to { width: 100% } }
+  @keyframes blink { 50% { border-color: transparent } }
+  @keyframes count-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes progress-fill { from { width: 0; } }
+  @keyframes wave { 0%,100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
+
+  .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+  .animate-slide-in { animation: slide-in-right 0.4s ease-out forwards; }
+  .animate-scale-in { animation: scale-in 0.3s ease-out forwards; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 10px 30px -10px rgba(16,185,129,0.5), 0 0 0 1px rgba(16,185,129,0.3) inset;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 15px 40px -10px rgba(16,185,129,0.7), 0 0 0 1px rgba(16,185,129,0.5) inset;
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+
+  .nav-item {
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 0;
+    background: linear-gradient(180deg, #10b981, #059669);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.2s ease;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.03); }
+  .nav-item.active { background: linear-gradient(90deg, rgba(16,185,129,0.1), transparent); color: #fff; }
+  .nav-item.active::before { height: 60%; }
+
+  .metric-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .chart-container { position: relative; }
+  .recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line { stroke: rgba(255,255,255,0.05); }
+  .recharts-text { fill: #9ca3af !important; font-size: 11px; }
+
+  .agent-card { transition: all 0.3s ease; }
+  .agent-card:hover { transform: translateY(-3px); border-color: rgba(16,185,129,0.3); }
+
+  .typing-dots span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: wave 1.2s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  .progress-bar {
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  .tooltip { position: relative; }
+  .tooltip:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translateX(-50%);
+    background: #1a2238;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 100;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 6px;
+  }
+
+  .page-enter { animation: fade-in 0.4s ease-out; }
+
+  input, textarea, select {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s ease;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: rgba(16,185,129,0.5);
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .health-ring {
+    transform: rotate(-90deg);
+  }
+
+  .scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: #1a2238 transparent;
+  }
+  .scroll-area::-webkit-scrollbar { width: 6px; }
+  .scroll-area::-webkit-scrollbar-thumb { background: #1a2238; border-radius: 3px; }
+
+  .kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    color: #9ca3af;
+  }
+
+  .dot-pattern {
+    background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+</style>
 </head>
 <body>
+<div id="root"></div>
 
-    <!-- Header Component -->
-    <header>
-        <div>
-            <h1>ATLAS SYSTEM</h1>
-            <p class="subtitle">Unified Frontend & Core Analytical Engine</p>
-        </div>
-        <div>
-            <button class="nav-btn active" id="btn-dash" onclick="switchTab('dashboard')">Dashboard</button>
-            <button class="nav-btn" id="btn-loan" onclick="switchTab('loan')">Loan Analyzer</button>
-        </div>
-    </header>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo } = React;
+const { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadialBarChart, RadialBar } = Recharts;
 
-    <!-- Tab 1: Dashboard Context -->
-    <div id="tab-dashboard" class="grid">
-        <!-- Backend Logic State 1: Health Monitor -->
-        <div class="card">
-            <h2 style="font-size: 18px; margin-bottom: 8px;">System Health Matrix</h2>
-            <p class="subtitle">Real-time local data evaluation parameters</p>
-            <div class="metric-val">82%</div>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
+// ============ ICONS (inline SVG components for reliability) ============
+const Icon = ({ name, size = 18, className = '', strokeWidth = 2 }) => {
+  const icons = {
+    dashboard: <><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></>,
+    user: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    wallet: <><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>,
+    trending: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
+    receipt: <><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/></>,
+    briefcase: <><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+    piggy: <><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2"/><path d="M2 9.5a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M14.1 10a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/></>,
+    shield: <><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></>,
+    calculator: <><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M12 18h.01"/><path d="M8 14h.01"/><path d="M8 18h.01"/></>,
+    target: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
+    file: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></>,
+    bot: <><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></>,
+    bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></>,
+    calendar: <><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
+    settings: <><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>,
+    logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>,
+    search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+    plus: <><path d="M5 12h14"/><path d="M12 5v14"/></>,
+    arrowUp: <><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></>,
+    arrowDown: <><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></>,
+    arrowRight: <><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>,
+    check: <><path d="M20 6 9 17l-5-5"/></>,
+    x: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+    menu: <><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>,
+    sparkles: <><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></>,
+    zap: <><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></>,
+    brain: <><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></>,
+    upload: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>,
+    download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>,
+    eye: <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>,
+    trash: <><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>,
+    filter: <><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>,
+    clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    alert: <><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>,
+    info: <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></>,
+    mail: <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
+    lock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
+    credit: <><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></>,
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    car: <><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></>,
+    graduation: <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>,
+    heart: <><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></>,
+    plane: <><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></>,
+    ring: <><circle cx="12" cy="12" r="5"/><path d="M12 7v10"/><path d="M7 12h10"/></>,
+    piggyBank: <><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2"/><path d="M14.1 10a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/></>,
+    coffee: <><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></>,
+    shopping: <><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></>,
+    bolt: <><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></>,
+    chevronDown: <><path d="m6 9 6 6 6-6"/></>,
+    chevronRight: <><path d="m9 18 6-6-6-6"/></>,
+    more: <><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
+    send: <><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></>,
+    mic: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>,
+    paperclip: <><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></>,
+    copy: <><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>,
+    star: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>,
+    globe: <><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
+    moon: <><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>,
+    sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></>,
+    activity: <><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>,
+    dollar: <><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>,
+    percent: <><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></>,
+    pie: <><path d="M21 15.5A9 9 0 1 1 8.5 3"/><path d="M21 15.5A9 9 0 0 0 12 3"/><path d="M21 12V3"/><path d="M12 3v9l8.5 3.5"/></>,
+    layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+    database: <><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></>,
+    link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
+    qr: <><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></>,
+    message: <><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></>,
+    users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    play: <><polygon points="6 3 20 12 6 21 6 3"/></>,
+    pause: <><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></>,
+    refresh: <><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></>,
+    flag: <><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></>,
+    award: <><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></>,
+    compass: <><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></>,
+    git: <><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M6 9v12"/></>,
+    code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
+    rocket: <><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></>,
+    gem: <><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></>,
+    crown: <><path d="M12 2L8 8l4 3 4-3-4-6z"/><path d="M2 8l4 12h12l4-12-6 4-4-3-4 3-6-4z"/></>,
+    building: <><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></>,
+  };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      {icons[name]}
+    </svg>
+  );
+};
+
+// ============ MOCK DATA ============
+const cashFlowData = [
+  { month: 'Jan', income: 85000, expense: 62000 },
+  { month: 'Feb', income: 87000, expense: 58000 },
+  { month: 'Mar', income: 92000, expense: 71000 },
+  { month: 'Apr', income: 88000, expense: 65000 },
+  { month: 'May', income: 95000, expense: 69000 },
+  { month: 'Jun', income: 98000, expense: 72000 },
+  { month: 'Jul', income: 102000, expense: 75000 },
+];
+
+const expenseCategories = [
+  { name: 'Housing', value: 28000, color: '#10b981' },
+  { name: 'Food', value: 12000, color: '#34d399' },
+  { name: 'Transport', value: 8000, color: '#d4af37' },
+  { name: 'Shopping', value: 9500, color: '#f0c654' },
+  { name: 'Entertainment', value: 5500, color: '#3b82f6' },
+  { name: 'Utilities', value: 4200, color: '#8b5cf6' },
+  { name: 'Other', value: 3800, color: '#64748b' },
+];
+
+const portfolioData = [
+  { name: 'Equities', value: 45, color: '#10b981' },
+  { name: 'Fixed Income', value: 25, color: '#d4af37' },
+  { name: 'Real Estate', value: 15, color: '#3b82f6' },
+  { name: 'Gold', value: 10, color: '#f0c654' },
+  { name: 'Cash', value: 5, color: '#64748b' },
+];
+
+const performanceData = [
+  { month: 'Jan', portfolio: 100, benchmark: 100 },
+  { month: 'Feb', portfolio: 103, benchmark: 101 },
+  { month: 'Mar', portfolio: 108, benchmark: 102 },
+  { month: 'Apr', portfolio: 105, benchmark: 100 },
+  { month: 'May', portfolio: 112, benchmark: 103 },
+  { month: 'Jun', portfolio: 118, benchmark: 105 },
+  { month: 'Jul', portfolio: 124, benchmark: 107 },
+];
+
+const transactions = [
+  { id: 1, name: 'Rent Payment', category: 'Housing', amount: -28000, date: 'Jul 15', icon: 'home', color: '#10b981' },
+  { id: 2, name: 'Salary Credit', category: 'Income', amount: 95000, date: 'Jul 01', icon: 'briefcase', color: '#10b981' },
+  { id: 3, name: 'Grocery Store', category: 'Food', amount: -2840, date: 'Jul 14', icon: 'shopping', color: '#34d399' },
+  { id: 4, name: 'Netflix', category: 'Entertainment', amount: -649, date: 'Jul 12', icon: 'play', color: '#3b82f6' },
+  { id: 5, name: 'Uber Rides', category: 'Transport', amount: -1240, date: 'Jul 13', icon: 'car', color: '#d4af37' },
+  { id: 6, name: 'Electricity Bill', category: 'Utilities', amount: -1850, date: 'Jul 10', icon: 'bolt', color: '#8b5cf6' },
+  { id: 7, name: 'Freelance Income', category: 'Income', amount: 18500, date: 'Jul 08', icon: 'code', color: '#10b981' },
+  { id: 8, name: 'Coffee Shop', category: 'Food', amount: -420, date: 'Jul 14', icon: 'coffee', color: '#34d399' },
+];
+
+const goals = [
+  { name: 'Dream Home', target: 5000000, current: 1250000, icon: 'home', color: '#10b981', deadline: '2029' },
+  { name: 'New Car', target: 800000, current: 320000, icon: 'car', color: '#d4af37', deadline: '2026' },
+  { name: 'Europe Trip', target: 450000, current: 180000, icon: 'plane', color: '#3b82f6', deadline: '2027' },
+  { name: 'Child Education', target: 2000000, current: 420000, icon: 'graduation', color: '#8b5cf6', deadline: '2035' },
+  { name: 'Retirement', target: 10000000, current: 1850000, icon: 'heart', color: '#f0c654', deadline: '2050' },
+];
+
+const calendarEvents = [
+  { date: 16, title: 'EMI - Home Loan', amount: '₹32,450', type: 'emi', color: '#10b981' },
+  { date: 18, title: 'Credit Card Bill', amount: '₹18,240', type: 'bill', color: '#d4af37' },
+  { date: 20, title: 'Insurance Renewal', amount: '₹12,500', type: 'insurance', color: '#3b82f6' },
+  { date: 25, title: 'Tax Payment Due', amount: '₹45,000', type: 'tax', color: '#8b5cf6' },
+  { date: 28, title: 'SIP - Mutual Fund', amount: '₹15,000', type: 'investment', color: '#f0c654' },
+];
+
+const agents = [
+  { name: 'Coordinator', role: 'Orchestrates all agents', status: 'active', confidence: 98, icon: 'brain', color: '#10b981' },
+  { name: 'Budget Agent', role: 'Expense optimization', status: 'analyzing', confidence: 94, icon: 'wallet', color: '#34d399' },
+  { name: 'Loan Agent', role: 'Debt analysis', status: 'completed', confidence: 96, icon: 'receipt', color: '#d4af37' },
+  { name: 'Investment Agent', role: 'Portfolio strategy', status: 'thinking', confidence: 91, icon: 'trending', color: '#3b82f6' },
+  { name: 'Insurance Agent', role: 'Coverage review', status: 'completed', confidence: 93, icon: 'shield', color: '#8b5cf6' },
+  { name: 'Tax Agent', role: 'Tax optimization', status: 'analyzing', confidence: 89, icon: 'calculator', color: '#f0c654' },
+  { name: 'Goal Agent', role: 'Goal planning', status: 'completed', confidence: 95, icon: 'target', color: '#ec4899' },
+  { name: 'Document Agent', role: 'Document intelligence', status: 'idle', confidence: 87, icon: 'file', color: '#64748b' },
+];
+
+const finnInsights = [
+  { type: 'alert', title: 'Unusual Spending Detected', desc: 'Your food expenses are 23% higher than last month. Review recent transactions.', priority: 'high' },
+  { type: 'opportunity', title: 'Save ₹8,400 on Home Loan', desc: 'Refinancing with current rates could save you ₹8,400/month. Want me to analyze?', priority: 'medium' },
+  { type: 'insight', title: 'Emergency Fund at 85%', desc: 'You\'re close to your 6-month target. Increase SIP by ₹2,000 to reach it by October.', priority: 'low' },
+  { type: 'recommendation', title: 'Rebalance Portfolio', desc: 'Your equity allocation has drifted to 52%. Consider rebalancing to maintain risk profile.', priority: 'medium' },
+];
+
+const documents = [
+  { name: 'Home_Loan_Agreement.pdf', size: '2.4 MB', date: 'Jul 10, 2026', type: 'loan', icon: 'receipt' },
+  { name: 'Salary_Slip_June.pdf', size: '340 KB', date: 'Jul 01, 2026', type: 'income', icon: 'briefcase' },
+  { name: 'ITR_2025_26.pdf', size: '1.8 MB', date: 'Jun 15, 2026', type: 'tax', icon: 'calculator' },
+  { name: 'Health_Insurance_Policy.pdf', size: '3.1 MB', date: 'May 22, 2026', type: 'insurance', icon: 'shield' },
+  { name: 'Mutual_Fund_Statement.pdf', size: '890 KB', date: 'Jul 05, 2026', type: 'investment', icon: 'trending' },
+  { name: 'Car_Loan_Statement.pdf', size: '1.2 MB', date: 'Jul 08, 2026', type: 'loan', icon: 'car' },
+];
+
+const marketNews = [
+  { title: 'Sensex Rallies 450 Points on Strong Q1 Earnings', source: 'Bloomberg', time: '2h ago', sentiment: 'up' },
+  { title: 'RBI Holds Repo Rate Steady at 6.25%', source: 'Reuters', time: '5h ago', sentiment: 'neutral' },
+  { title: 'Gold Hits New All-Time High Amid Global Uncertainty', source: 'CNBC', time: '8h ago', sentiment: 'up' },
+  { title: 'Tech Stocks Face Pressure on Rising Bond Yields', source: 'Financial Times', time: '12h ago', sentiment: 'down' },
+];
+
+// ============ LANDING PAGE ============
+const LandingPage = ({ onEnter }) => {
+  return (
+    <div className="min-h-screen bg-midnight-950 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 gradient-mesh"></div>
+      <div className="absolute inset-0 grid-bg opacity-40"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald/10 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px]"></div>
+
+      {/* Nav */}
+      <nav className="relative z-50 flex items-center justify-between px-6 md:px-12 py-5">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+            <Icon name="gem" size={20} className="text-white" />
+          </div>
+          <span className="text-xl font-bold tracking-tight">Atlas</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
+          <a href="#features" className="hover:text-white transition">Features</a>
+          <a href="#agents" className="hover:text-white transition">Agents</a>
+          <a href="#pricing" className="hover:text-white transition">Pricing</a>
+          <a href="#about" className="hover:text-white transition">About</a>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="hidden md:block text-sm text-gray-300 hover:text-white transition px-4 py-2">Sign in</button>
+          <button onClick={onEnter} className="btn-primary text-white text-sm font-medium px-5 py-2.5 rounded-xl">
+            Launch Atlas →
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative z-10 px-6 md:px-12 pt-16 pb-24 max-w-7xl mx-auto">
+        <div className="flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-8 animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-emerald animate-pulse"></span>
+            <span className="text-xs text-gray-300">Introducing Finn — Your AI Financial Companion</span>
+            <Icon name="arrowRight" size={12} className="text-gray-400" />
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6 max-w-4xl animate-fade-in">
+            <span className="gradient-text">Your finances,</span><br/>
+            <span className="bg-gradient-to-r from-emerald-light via-emerald to-emerald-dark bg-clip-text text-transparent">intelligently orchestrated.</span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mb-10 leading-relaxed animate-fade-in">
+            Atlas is an enterprise-grade financial intelligence platform powered by multi-agent AI.
+            Track, analyze, and optimize every rupee — with explainable guidance you can trust.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 mb-16 animate-fade-in">
+            <button onClick={onEnter} className="btn-primary text-white font-medium px-7 py-3.5 rounded-xl flex items-center gap-2">
+              Start free trial <Icon name="arrowRight" size={16} />
+            </button>
+            <button className="btn-ghost text-gray-200 font-medium px-7 py-3.5 rounded-xl flex items-center gap-2">
+              <Icon name="play" size={14} /> Watch demo
+            </button>
+          </div>
+
+          {/* Dashboard preview */}
+          <div className="relative w-full max-w-6xl animate-scale-in">
+            <div className="absolute -inset-4 bg-gradient-to-r from-emerald/20 via-gold/10 to-emerald/20 rounded-3xl blur-2xl opacity-60"></div>
+            <div className="relative glass-strong rounded-2xl p-4 shadow-premium">
+              <div className="flex items-center gap-2 mb-4 px-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/60"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/60"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500/60"></div>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="px-4 py-1 rounded-md bg-midnight-800 text-xs text-gray-400 font-mono">atlas.app/dashboard</div>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-midnight-900 to-midnight-800 rounded-xl p-6 min-h-[420px]">
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  {[
+                    { label: 'Net Worth', value: '₹48.2L', change: '+12.4%', icon: 'wallet' },
+                    { label: 'Monthly Income', value: '₹1.02L', change: '+8.2%', icon: 'trending' },
+                    { label: 'Savings Rate', value: '38.4%', change: '+3.1%', icon: 'piggyBank' },
+                    { label: 'Health Score', value: '847', change: '+24', icon: 'activity' },
+                  ].map((m, i) => (
+                    <div key={i} className="glass rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-400">{m.label}</span>
+                        <Icon name={m.icon} size={14} className="text-emerald" />
+                      </div>
+                      <div className="text-xl font-bold text-white">{m.value}</div>
+                      <div className="text-xs text-emerald mt-1 flex items-center gap-1">
+                        <Icon name="arrowUp" size={10} /> {m.change}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 glass rounded-xl p-4">
+                    <div className="text-xs text-gray-400 mb-3">Cash Flow — Last 7 months</div>
+                    <div style={{ width: '100%', height: 180 }}>
+                      <ResponsiveContainer>
+                        <AreaChart data={cashFlowData}>
+                          <defs>
+                            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                              <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#d4af37" stopOpacity={0.3}/>
+                              <stop offset="100%" stopColor="#d4af37" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false}/>
+                          <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fill="url(#g1)"/>
+                          <Area type="monotone" dataKey="expense" stroke="#d4af37" strokeWidth={2} fill="url(#g2)"/>
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="glass rounded-xl p-4">
+                    <div className="text-xs text-gray-400 mb-3">Portfolio Mix</div>
+                    <div style={{ width: '100%', height: 140 }}>
+                      <ResponsiveContainer>
+                        <PieChart>
+                          <Pie data={portfolioData} dataKey="value" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                            {portfolioData.map((e, i) => <Cell key={i} fill={e.color}/>)}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {portfolioData.slice(0,3).map((p,i) => (
+                        <div key={i} className="flex items-center gap-1 text-[10px] text-gray-400">
+                          <div className="w-2 h-2 rounded-full" style={{background: p.color}}></div>
+                          {p.name}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p style="font-size: 13px; color: #9ca3af; margin-top: 12px;">All diagnostic channels reporting operational.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="relative z-10 px-6 md:px-12 py-16 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[
+            { value: '₹12.4Cr+', label: 'Assets Analyzed' },
+            { value: '9', label: 'Specialized AI Agents' },
+            { value: '98.7%', label: 'Prediction Accuracy' },
+            { value: '24/7', label: 'Financial Guidance' },
+          ].map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">{s.value}</div>
+              <div className="text-sm text-gray-400">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="relative z-10 px-6 md:px-12 py-24 max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <div className="inline-block px-3 py-1 rounded-full glass text-xs text-emerald mb-4">FEATURES</div>
+          <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Everything you need to master your money</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">A complete financial operating system, powered by specialized AI agents working together in harmony.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { icon: 'brain', title: 'Multi-Agent Intelligence', desc: 'Nine specialized AI agents collaborate to provide comprehensive financial insights.' },
+            { icon: 'shield', title: 'Explainable AI', desc: 'Every recommendation comes with confidence scores and reasoning you can verify.' },
+            { icon: 'target', title: 'Goal-Driven Planning', desc: 'Set financial goals and let Finn build adaptive strategies to achieve them.' },
+            { icon: 'file', title: 'Document Intelligence', desc: 'Upload loan agreements, policies, or tax forms. Finn reads and analyzes them.' },
+            { icon: 'activity', title: 'Real-Time Monitoring', desc: 'Track spending, investments, and market movements with live dashboards.' },
+            { icon: 'lock', title: 'Bank-Grade Security', desc: '256-bit encryption, biometric auth, and zero-knowledge architecture.' },
+          ].map((f, i) => (
+            <div key={i} className="glass rounded-2xl p-6 metric-card group">
+              <div className="w-12 h-12 rounded-xl gradient-emerald flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                <Icon name={f.icon} size={22} className="text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
+              <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Meet Finn */}
+      <section id="agents" className="relative z-10 px-6 md:px-12 py-24 max-w-7xl mx-auto">
+        <div className="glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald/10 rounded-full blur-3xl"></div>
+          <div className="relative grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-block px-3 py-1 rounded-full glass text-xs text-emerald mb-4">MEET FINN</div>
+              <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-6">Not a chatbot.<br/>A financial companion.</h2>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Finn coordinates nine specialized agents to understand your complete financial picture.
+                From loan analysis to tax optimization, every insight is explainable, personalized, and actionable.
+              </p>
+              <div className="space-y-3">
+                {[
+                  'Coordinates 9 specialized AI agents',
+                  'Provides explainable recommendations with confidence scores',
+                  'Reads and analyzes your financial documents',
+                  'Adapts to your life changes and goals',
+                ].map((p, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full gradient-emerald flex items-center justify-center flex-shrink-0">
+                      <Icon name="check" size={12} className="text-white" />
+                    </div>
+                    <span className="text-gray-300 text-sm">{p}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative">
+              <div className="relative w-80 h-80 mx-auto">
+                {/* Orbiting agents */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 rounded-full gradient-emerald flex items-center justify-center shadow-glow-emerald animate-pulse-glow">
+                    <Icon name="sparkles" size={48} className="text-white" />
+                  </div>
+                </div>
+                {[0,1,2,3,4,5,6,7].map(i => (
+                  <div key={i} className="absolute inset-0 flex items-center justify-center" style={{ animation: `spin-slow ${20 + i*2}s linear infinite`, animationDirection: i%2 ? 'reverse' : 'normal' }}>
+                    <div className="absolute" style={{ transform: `rotate(${i*45}deg) translateX(140px)` }}>
+                      <div className="w-10 h-10 rounded-xl glass flex items-center justify-center" style={{ animation: `spin-slow ${20 + i*2}s linear infinite reverse` }}>
+                        <Icon name={agents[i].icon} size={16} style={{ color: agents[i].color }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="relative z-10 px-6 md:px-12 py-24 max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <div className="inline-block px-3 py-1 rounded-full glass text-xs text-emerald mb-4">TESTIMONIALS</div>
+          <h2 className="text-4xl md:text-5xl font-bold gradient-text">Trusted by 50,000+ users</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { name: 'Priya Sharma', role: 'Product Manager, Bangalore', text: 'Atlas transformed how I manage my finances. Finn caught a hidden charge in my home loan that saved me ₹2.4L over the loan term.' },
+            { name: 'Arjun Mehta', role: 'Founder, FinTech Startup', text: 'The multi-agent approach is brilliant. It\'s like having a team of financial experts working for me 24/7. Worth every rupee.' },
+            { name: 'Sneha Reddy', role: 'Doctor, Mumbai', text: 'Finally, financial software that explains its recommendations. I trust Finn because I can see exactly why it suggests what it does.' },
+          ].map((t, i) => (
+            <div key={i} className="glass rounded-2xl p-6">
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_,j) => <Icon key={j} name="star" size={14} className="text-gold fill-gold" />)}
+              </div>
+              <p className="text-gray-300 text-sm leading-relaxed mb-6">"{t.text}"</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full gradient-emerald flex items-center justify-center font-semibold text-white">
+                  {t.name[0]}
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">{t.name}</div>
+                  <div className="text-xs text-gray-400">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative z-10 px-6 md:px-12 py-24 max-w-5xl mx-auto">
+        <div className="glass-strong rounded-3xl p-12 text-center relative overflow-hidden">
+          <div className="absolute inset-0 gradient-mesh opacity-50"></div>
+          <div className="relative">
+            <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Ready to take control?</h2>
+            <p className="text-gray-400 mb-8 max-w-xl mx-auto">Join thousands who've transformed their financial lives with Atlas. Free for 30 days.</p>
+            <button onClick={onEnter} className="btn-primary text-white font-medium px-8 py-4 rounded-xl text-lg">
+              Launch Atlas — It's Free →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/5 px-6 md:px-12 py-12 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center">
+                <Icon name="gem" size={16} className="text-white" />
+              </div>
+              <span className="font-bold">Atlas</span>
+            </div>
+            <p className="text-sm text-gray-400">AI-powered financial intelligence for the modern world.</p>
+          </div>
+          {[
+            { title: 'Product', links: ['Features', 'Pricing', 'Agents', 'Security'] },
+            { title: 'Company', links: ['About', 'Blog', 'Careers', 'Press'] },
+            { title: 'Resources', links: ['Documentation', 'Help Center', 'API', 'Status'] },
+          ].map((col, i) => (
+            <div key={i}>
+              <div className="text-sm font-semibold text-white mb-4">{col.title}</div>
+              <div className="space-y-2">
+                {col.links.map((l, j) => <div key={j} className="text-sm text-gray-400 hover:text-white cursor-pointer transition">{l}</div>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="divider mb-6"></div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+          <div>© 2026 Atlas Financial Intelligence. All rights reserved.</div>
+          <div className="flex gap-6">
+            <span>Privacy</span><span>Terms</span><span>Cookies</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+// ============ AUTH SCREENS ============
+const AuthScreen = ({ onComplete }) => {
+  const [mode, setMode] = useState('login'); // login, register, forgot, otp
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
+  const passwordStrength = useMemo(() => {
+    let s = 0;
+    if (password.length >= 8) s++;
+    if (/[A-Z]/.test(password)) s++;
+    if (/[0-9]/.test(password)) s++;
+    if (/[^A-Za-z0-9]/.test(password)) s++;
+    return s;
+  }, [password]);
+
+  return (
+    <div className="min-h-screen bg-midnight-950 relative overflow-hidden flex items-center justify-center p-6">
+      <div className="absolute inset-0 gradient-mesh"></div>
+      <div className="absolute inset-0 grid-bg opacity-30"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gold/5 rounded-full blur-3xl"></div>
+
+      <div className="relative z-10 w-full max-w-md">
+        <div className="flex items-center gap-2 mb-8 justify-center">
+          <div className="w-10 h-10 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+            <Icon name="gem" size={22} className="text-white" />
+          </div>
+          <span className="text-2xl font-bold">Atlas</span>
         </div>
 
-        <!-- Backend Logic State 2: Natural Language Engine -->
-        <div class="card chat-container">
-            <h2 style="font-size: 18px; margin-bottom: 12px;">Cognitive Assistant</h2>
-            <div class="chat-messages" id="chat-box">
-                <div class="message assistant">System initialized. Enter a parameter or request an asset breakdown to begin analysis.</div>
+        <div className="glass-strong rounded-2xl p-8 shadow-premium">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold gradient-text mb-2">
+              {mode === 'login' && 'Welcome back'}
+              {mode === 'register' && 'Create your account'}
+              {mode === 'forgot' && 'Reset password'}
+              {mode === 'otp' && 'Verify your email'}
+            </h1>
+            <p className="text-sm text-gray-400">
+              {mode === 'login' && 'Sign in to access your financial command center'}
+              {mode === 'register' && 'Start your journey to financial mastery'}
+              {mode === 'forgot' && 'We\'ll send you a reset link'}
+              {mode === 'otp' && `Code sent to ${email || 'your email'}`}
+            </p>
+          </div>
+
+          {mode === 'otp' ? (
+            <div>
+              <div className="flex gap-3 mb-6 justify-center">
+                {[0,1,2,3,4,5].map(i => (
+                  <input key={i} type="text" maxLength="1" className="w-12 h-14 text-center text-xl font-bold rounded-lg bg-midnight-800 border border-white/10 focus:border-emerald" />
+                ))}
+              </div>
+              <button onClick={onComplete} className="w-full btn-primary text-white font-medium py-3 rounded-xl mb-3">
+                Verify & Continue
+              </button>
+              <div className="text-center text-sm text-gray-400">
+                Didn't receive code? <span className="text-emerald cursor-pointer">Resend</span>
+              </div>
             </div>
-            <form class="chat-form" onsubmit="handleChatSubmit(event)">
-                <input type="text" id="chat-input" class="input-field" placeholder="Ask Atlas to evaluate something..." required autocomplete="off">
-                <button type="submit" class="btn-submit">Execute</button>
-            </form>
+          ) : (
+            <div className="space-y-4">
+              {mode === 'register' && (
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Full name</label>
+                  <div className="relative">
+                    <Icon name="user" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input value={name} onChange={e=>setName(e.target.value)} type="text" placeholder="John Doe" className="w-full pl-10 pr-4 py-3 rounded-xl text-sm"/>
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Email</label>
+                <div className="relative">
+                  <Icon name="mail" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="you@company.com" className="w-full pl-10 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+              {mode !== 'forgot' && (
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Password</label>
+                  <div className="relative">
+                    <Icon name="lock" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input value={password} onChange={e=>setPassword(e.target.value)} type="password" placeholder="••••••••" className="w-full pl-10 pr-4 py-3 rounded-xl text-sm"/>
+                  </div>
+                  {mode === 'register' && password && (
+                    <div className="mt-2">
+                      <div className="flex gap-1 mb-1">
+                        {[0,1,2,3].map(i => (
+                          <div key={i} className={`h-1 flex-1 rounded-full ${i < passwordStrength ? (passwordStrength <= 1 ? 'bg-red-500' : passwordStrength <= 2 ? 'bg-yellow-500' : passwordStrength <= 3 ? 'bg-blue-500' : 'bg-emerald') : 'bg-white/5'}`}></div>
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {passwordStrength <= 1 && 'Weak — add uppercase & numbers'}
+                        {passwordStrength === 2 && 'Fair — add symbols for strength'}
+                        {passwordStrength === 3 && 'Good — almost there'}
+                        {passwordStrength === 4 && 'Strong password ✓'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {mode === 'login' && (
+                <div className="flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 text-gray-400">
+                    <input type="checkbox" className="rounded accent-emerald"/> Remember me
+                  </label>
+                  <span onClick={() => setMode('forgot')} className="text-emerald cursor-pointer">Forgot password?</span>
+                </div>
+              )}
+
+              <button onClick={() => mode === 'login' ? onComplete() : mode === 'register' ? setMode('otp') : setMode('otp')} className="w-full btn-primary text-white font-medium py-3 rounded-xl">
+                {mode === 'login' && 'Sign in to Atlas'}
+                {mode === 'register' && 'Create account'}
+                {mode === 'forgot' && 'Send reset link'}
+              </button>
+
+              <div className="relative my-6">
+                <div className="divider"></div>
+                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-midnight-900 px-3 text-xs text-gray-500">OR</span>
+              </div>
+
+              <button className="w-full btn-ghost text-gray-200 font-medium py-3 rounded-xl flex items-center justify-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" opacity=".7" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/></svg>
+                Continue with Google
+              </button>
+
+              <div className="text-center text-sm text-gray-400 pt-2">
+                {mode === 'login' && <>New to Atlas? <span onClick={() => setMode('register')} className="text-emerald cursor-pointer">Create account</span></>}
+                {mode === 'register' && <>Already have an account? <span onClick={() => setMode('login')} className="text-emerald cursor-pointer">Sign in</span></>}
+                {mode === 'forgot' && <><span onClick={() => setMode('login')} className="text-emerald cursor-pointer">← Back to sign in</span></>}
+              </div>
+            </div>
+          )}
         </div>
+
+        <div className="text-center text-xs text-gray-500 mt-6">
+          Protected by 256-bit encryption · SOC 2 Type II certified
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ ONBOARDING ============
+const Onboarding = ({ onComplete }) => {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { title: 'Welcome to Atlas', subtitle: 'Let\'s personalize your experience', type: 'welcome' },
+    { title: 'Tell us about yourself', subtitle: 'Basic information', type: 'personal' },
+    { title: 'Your income', subtitle: 'Monthly and business income', type: 'income' },
+    { title: 'Expenses & savings', subtitle: 'Where does your money go?', type: 'expenses' },
+    { title: 'Goals & risk', subtitle: 'What are you working toward?', type: 'goals' },
+    { title: 'You\'re all set!', subtitle: 'Finn is ready to guide you', type: 'complete' },
+  ];
+
+  const current = steps[step];
+
+  return (
+    <div className="min-h-screen bg-midnight-950 relative overflow-hidden flex items-center justify-center p-6">
+      <div className="absolute inset-0 gradient-mesh"></div>
+      <div className="absolute inset-0 grid-bg opacity-30"></div>
+      <div className="relative z-10 w-full max-w-2xl">
+        <div className="flex items-center gap-2 mb-8 justify-center">
+          <div className="w-10 h-10 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+            <Icon name="gem" size={22} className="text-white" />
+          </div>
+          <span className="text-2xl font-bold">Atlas</span>
+        </div>
+
+        {/* Progress */}
+        <div className="flex items-center gap-2 mb-8 max-w-md mx-auto">
+          {steps.map((_, i) => (
+            <div key={i} className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+              <div className={`h-full transition-all duration-500 ${i <= step ? 'gradient-emerald' : ''}`} style={{ width: i < step ? '100%' : i === step ? '50%' : '0%' }}></div>
+            </div>
+          ))}
+        </div>
+
+        <div className="glass-strong rounded-2xl p-8 shadow-premium">
+          <div className="text-center mb-8">
+            <div className="inline-block px-3 py-1 rounded-full glass text-xs text-emerald mb-4">STEP {step + 1} OF {steps.length}</div>
+            <h2 className="text-3xl font-bold gradient-text mb-2">{current.title}</h2>
+            <p className="text-gray-400">{current.subtitle}</p>
+          </div>
+
+          {current.type === 'welcome' && (
+            <div className="text-center py-8">
+              <div className="w-24 h-24 mx-auto rounded-3xl gradient-emerald flex items-center justify-center shadow-glow-emerald mb-6 animate-float">
+                <Icon name="sparkles" size={48} className="text-white" />
+              </div>
+              <p className="text-gray-300 max-w-md mx-auto mb-6">
+                I'm <span className="text-emerald font-semibold">Finn</span>, your AI financial companion.
+                I'll coordinate specialized agents to help you understand, optimize, and grow your wealth.
+              </p>
+            </div>
+          )}
+
+          {current.type === 'personal' && (
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Full name</label>
+                <input type="text" placeholder="John Doe" className="w-full px-4 py-3 rounded-xl text-sm"/>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Age</label>
+                <input type="number" placeholder="28" className="w-full px-4 py-3 rounded-xl text-sm"/>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Occupation</label>
+                <select className="w-full px-4 py-3 rounded-xl text-sm">
+                  <option>Software Engineer</option>
+                  <option>Product Manager</option>
+                  <option>Entrepreneur</option>
+                  <option>Doctor</option>
+                  <option>Student</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">City</label>
+                <input type="text" placeholder="Bangalore" className="w-full px-4 py-3 rounded-xl text-sm"/>
+              </div>
+            </div>
+          )}
+
+          {current.type === 'income' && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Monthly salary (after tax)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="95,000" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Business / freelance income</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="18,500" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Other income (rent, dividends)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="12,000" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {current.type === 'expenses' && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Monthly expenses</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="75,000" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Current savings</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="3,50,000" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1.5 block">Existing loans (total outstanding)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                  <input type="text" placeholder="18,50,000" className="w-full pl-8 pr-4 py-3 rounded-xl text-sm"/>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {current.type === 'goals' && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-400 mb-2 block">What are your top goals?</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Buy a home', 'Retire early', 'Travel', 'Child education', 'Start business', 'Emergency fund'].map(g => (
+                    <label key={g} className="flex items-center gap-2 p-3 rounded-xl glass cursor-pointer hover:bg-white/5">
+                      <input type="checkbox" className="accent-emerald"/>
+                      <span className="text-sm">{g}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-2 block">Risk appetite</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Conservative', 'Balanced', 'Aggressive'].map((r, i) => (
+                    <button key={r} className={`p-3 rounded-xl text-sm ${i === 1 ? 'gradient-emerald text-white' : 'glass'}`}>{r}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {current.type === 'complete' && (
+            <div className="text-center py-8">
+              <div className="w-24 h-24 mx-auto rounded-3xl gradient-emerald flex items-center justify-center shadow-glow-emerald mb-6 animate-pulse-glow">
+                <Icon name="check" size={48} className="text-white" />
+              </div>
+              <p className="text-gray-300 max-w-md mx-auto mb-6">
+                Your financial profile is ready. Finn and the agent team have analyzed your data and prepared personalized recommendations.
+              </p>
+              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+                {[
+                  { label: 'Health Score', value: '847' },
+                  { label: 'Insights', value: '24' },
+                  { label: 'Saved', value: '₹48K' },
+                ].map(s => (
+                  <div key={s.label} className="glass rounded-xl p-3">
+                    <div className="text-xl font-bold text-emerald">{s.value}</div>
+                    <div className="text-xs text-gray-400">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+            <button onClick={() => step > 0 && setStep(step - 1)} disabled={step === 0} className="text-sm text-gray-400 hover:text-white disabled:opacity-30">
+              ← Back
+            </button>
+            <button onClick={() => step < steps.length - 1 ? setStep(step + 1) : onComplete()} className="btn-primary text-white font-medium px-6 py-2.5 rounded-xl text-sm">
+              {step === steps.length - 1 ? 'Enter Atlas →' : 'Continue'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ SIDEBAR ============
+const Sidebar = ({ current, setCurrent, collapsed, setCollapsed }) => {
+  const navGroups = [
+    {
+      label: 'Overview',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+        { id: 'finn', label: 'Finn AI Advisor', icon: 'sparkles' },
+        { id: 'agents', label: 'Multi-Agent Panel', icon: 'brain' },
+      ]
+    },
+    {
+      label: 'Money',
+      items: [
+        { id: 'profile', label: 'Financial Profile', icon: 'user' },
+        { id: 'budget', label: 'Budget Planner', icon: 'wallet' },
+        { id: 'expenses', label: 'Expense Tracker', icon: 'receipt' },
+        { id: 'income', label: 'Income Manager', icon: 'trending' },
+      ]
+    },
+    {
+      label: 'Planning',
+      items: [
+        { id: 'loans', label: 'Loan Analyzer', icon: 'briefcase' },
+        { id: 'investments', label: 'Investment Planner', icon: 'piggy' },
+        { id: 'insurance', label: 'Insurance Analysis', icon: 'shield' },
+        { id: 'tax', label: 'Tax Planner', icon: 'calculator' },
+        { id: 'goals', label: 'Goal Planner', icon: 'target' },
+      ]
+    },
+    {
+      label: 'Tools',
+      items: [
+        { id: 'reports', label: 'Financial Reports', icon: 'file' },
+        { id: 'documents', label: 'Documents', icon: 'layers' },
+        { id: 'notifications', label: 'Notifications', icon: 'bell' },
+        { id: 'calendar', label: 'Calendar', icon: 'calendar' },
+      ]
+    },
+    {
+      label: 'Account',
+      items: [
+        { id: 'support', label: 'Support', icon: 'message' },
+        { id: 'settings', label: 'Settings', icon: 'settings' },
+      ]
+    },
+  ];
+
+  return (
+    <aside className={`${collapsed ? 'w-20' : 'w-64'} bg-midnight-900 border-r border-white/5 flex flex-col transition-all duration-300 h-screen sticky top-0`}>
+      <div className="p-4 flex items-center justify-between border-b border-white/5">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+              <Icon name="gem" size={18} className="text-white" />
+            </div>
+            <div>
+              <div className="font-bold text-sm">Atlas</div>
+              <div className="text-[10px] text-gray-500">Financial OS</div>
+            </div>
+          </div>
+        )}
+        <button onClick={() => setCollapsed(!collapsed)} className="p-2 rounded-lg hover:bg-white/5 text-gray-400">
+          <Icon name={collapsed ? 'chevronRight' : 'x'} size={16} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scroll-area py-3">
+        {navGroups.map((group, gi) => (
+          <div key={gi} className="mb-4">
+            {!collapsed && <div className="px-5 py-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{group.label}</div>}
+            {group.items.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setCurrent(item.id)}
+                className={`nav-item w-full flex items-center gap-3 px-4 py-2.5 text-sm ${current === item.id ? 'active' : 'text-gray-400'} ${collapsed ? 'justify-center' : ''}`}
+              >
+                <Icon name={item.icon} size={18} />
+                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && item.id === 'finn' && (
+                  <span className="ml-auto w-2 h-2 rounded-full bg-emerald animate-pulse"></span>
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="p-3 border-t border-white/5">
+        {!collapsed ? (
+          <div className="glass rounded-xl p-3">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full gradient-emerald flex items-center justify-center font-semibold text-white text-sm">AK</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">Arjun Kumar</div>
+                <div className="text-xs text-gray-400 truncate">arjun@atlas.app</div>
+              </div>
+            </div>
+            <button className="w-full text-xs text-gray-400 hover:text-white flex items-center gap-2 py-1.5">
+              <Icon name="logout" size={12} /> Sign out
+            </button>
+          </div>
+        ) : (
+          <div className="w-10 h-10 mx-auto rounded-full gradient-emerald flex items-center justify-center font-semibold text-white text-sm">AK</div>
+        )}
+      </div>
+    </aside>
+  );
+};
+
+// ============ TOP BAR ============
+const TopBar = ({ title, subtitle }) => {
+  const [showSearch, setShowSearch] = useState(false);
+  return (
+    <div className="sticky top-0 z-30 bg-midnight-950/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold gradient-text">{title}</h1>
+          {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div onClick={() => setShowSearch(!showSearch)} className="flex items-center gap-2 px-3 py-2 rounded-lg glass cursor-pointer hover:bg-white/5 transition w-64">
+              <Icon name="search" size={14} className="text-gray-400" />
+              <span className="text-xs text-gray-400 flex-1">Search anything...</span>
+              <span className="kbd">⌘K</span>
+            </div>
+          </div>
+          <button className="p-2 rounded-lg glass hover:bg-white/5 relative">
+            <Icon name="bell" size={16} className="text-gray-300" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald animate-pulse"></span>
+          </button>
+          <button className="p-2 rounded-lg glass hover:bg-white/5">
+            <Icon name="settings" size={16} className="text-gray-300" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ DASHBOARD ============
+const Dashboard = () => {
+  const healthScore = 847;
+  const circumference = 2 * Math.PI * 58;
+  const healthOffset = circumference - (healthScore / 1000) * circumference;
+
+  return (
+    <div className="p-6 space-y-6 page-enter">
+      {/* Top metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Net Worth', value: '₹48,24,500', change: '+12.4%', icon: 'wallet', gradient: 'from-emerald/20 to-emerald/5' },
+          { label: 'Monthly Income', value: '₹1,02,000', change: '+8.2%', icon: 'trending', gradient: 'from-blue-500/20 to-blue-500/5' },
+          { label: 'Monthly Expenses', value: '₹75,420', change: '-3.1%', icon: 'receipt', gradient: 'from-gold/20 to-gold/5' },
+          { label: 'Savings Rate', value: '38.4%', change: '+5.2%', icon: 'piggyBank', gradient: 'from-purple-500/20 to-purple-500/5' },
+        ].map((m, i) => (
+          <div key={i} className={`metric-card glass rounded-2xl p-5 relative overflow-hidden`}>
+            <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient} opacity-50`}></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-gray-400 font-medium">{m.label}</span>
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                  <Icon name={m.icon} size={14} className="text-emerald" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">{m.value}</div>
+              <div className={`text-xs flex items-center gap-1 ${m.change.startsWith('+') ? 'text-emerald' : m.change.startsWith('-') && m.label.includes('Expense') ? 'text-emerald' : 'text-red-400'}`}>
+                <Icon name={m.change.startsWith('+') ? 'arrowUp' : 'arrowDown'} size={10} />
+                {m.change} vs last month
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Health + Cash flow */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-semibold text-white">Financial Health</div>
+              <div className="text-xs text-gray-400">Overall score</div>
+            </div>
+            <div className="tag bg-emerald/10 text-emerald">
+              <Icon name="trending" size={10} /> Excellent
+            </div>
+          </div>
+          <div className="relative flex items-center justify-center py-4">
+            <svg width="160" height="160" className="health-ring">
+              <circle cx="80" cy="80" r="58" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="none"/>
+              <circle cx="80" cy="80" r="58" stroke="url(#healthGrad)" strokeWidth="12" fill="none"
+                strokeDasharray={circumference} strokeDashoffset={healthOffset} strokeLinecap="round"
+                style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}/>
+              <defs>
+                <linearGradient id="healthGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#10b981"/>
+                  <stop offset="100%" stopColor="#34d399"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute text-center">
+              <div className="text-4xl font-bold text-white">{healthScore}</div>
+              <div className="text-xs text-gray-400">out of 1000</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {[
+              { label: 'Savings', score: 92 },
+              { label: 'Debt', score: 78 },
+              { label: 'Invest', score: 85 },
+            ].map(s => (
+              <div key={s.label} className="text-center">
+                <div className="text-sm font-bold text-white">{s.score}</div>
+                <div className="text-[10px] text-gray-400">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-semibold text-white">Cash Flow</div>
+              <div className="text-xs text-gray-400">Income vs Expenses</div>
+            </div>
+            <div className="flex gap-2">
+              {['1M','3M','6M','1Y'].map((p,i) => (
+                <button key={p} className={`px-3 py-1 rounded-lg text-xs ${i === 2 ? 'gradient-emerald text-white' : 'text-gray-400 hover:bg-white/5'}`}>{p}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ width: '100%', height: 260 }}>
+            <ResponsiveContainer>
+              <AreaChart data={cashFlowData}>
+                <defs>
+                  <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#d4af37" stopOpacity={0.3}/>
+                    <stop offset="100%" stopColor="#d4af37" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+                <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+                <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+                <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fill="url(#incomeGrad)"/>
+                <Area type="monotone" dataKey="expense" stroke="#d4af37" strokeWidth={2} fill="url(#expenseGrad)"/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Categories + Transactions */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-white">Expense Categories</div>
+            <button className="text-xs text-emerald">View all</button>
+          </div>
+          <div style={{ width: '100%', height: 180 }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={expenseCategories} dataKey="value" innerRadius={50} outerRadius={75} paddingAngle={2}>
+                  {expenseCategories.map((e, i) => <Cell key={i} fill={e.color}/>)}
+                </Pie>
+                <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-2 mt-2">
+            {expenseCategories.slice(0,4).map(c => (
+              <div key={c.name} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{background: c.color}}></div>
+                  <span className="text-gray-300">{c.name}</span>
+                </div>
+                <span className="text-gray-400 font-mono">₹{(c.value/1000).toFixed(1)}K</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-white">Recent Transactions</div>
+            <button className="text-xs text-emerald">View all</button>
+          </div>
+          <div className="space-y-1">
+            {transactions.slice(0, 6).map(t => (
+              <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition cursor-pointer">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${t.color}15` }}>
+                  <Icon name={t.icon} size={16} style={{ color: t.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-white truncate">{t.name}</div>
+                  <div className="text-xs text-gray-400">{t.category} · {t.date}</div>
+                </div>
+                <div className={`text-sm font-semibold ${t.amount > 0 ? 'text-emerald' : 'text-white'}`}>
+                  {t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Goals + Calendar + Insights */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-white">Goal Progress</div>
+            <button className="text-xs text-emerald">+ New</button>
+          </div>
+          <div className="space-y-4">
+            {goals.slice(0, 4).map(g => {
+              const pct = Math.round((g.current / g.target) * 100);
+              return (
+                <div key={g.name}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${g.color}20` }}>
+                      <Icon name={g.icon} size={14} style={{ color: g.color }} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-white">{g.name}</div>
+                      <div className="text-[10px] text-gray-400">₹{(g.current/100000).toFixed(1)}L / ₹{(g.target/100000).toFixed(1)}L</div>
+                    </div>
+                    <div className="text-xs font-semibold" style={{ color: g.color }}>{pct}%</div>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full progress-bar rounded-full" style={{ width: `${pct}%`, background: g.color }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-white">Upcoming</div>
+            <button className="text-xs text-gray-400">July 2026</button>
+          </div>
+          <div className="space-y-2">
+            {calendarEvents.map((e, i) => (
+              <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/3 transition">
+                <div className="w-10 text-center">
+                  <div className="text-lg font-bold text-white">{e.date}</div>
+                  <div className="text-[10px] text-gray-500">Jul</div>
+                </div>
+                <div className="w-px h-8" style={{ background: e.color }}></div>
+                <div className="flex-1">
+                  <div className="text-sm text-white">{e.title}</div>
+                  <div className="text-xs text-gray-400 font-mono">{e.amount}</div>
+                </div>
+                <div className="tag" style={{ background: `${e.color}20`, color: e.color }}>{e.type}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+                <Icon name="sparkles" size={14} className="text-white" />
+              </div>
+              <div className="text-sm font-semibold text-white">Finn's Insights</div>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-emerald animate-pulse"></span>
+          </div>
+          <div className="space-y-3">
+            {finnInsights.map((ins, i) => (
+              <div key={i} className="p-3 rounded-xl bg-white/3 hover:bg-white/5 transition cursor-pointer">
+                <div className="flex items-start gap-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    ins.type === 'alert' ? 'bg-red-500/20 text-red-400' :
+                    ins.type === 'opportunity' ? 'bg-emerald/20 text-emerald' :
+                    ins.type === 'insight' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-gold/20 text-gold'
+                  }`}>
+                    <Icon name={ins.type === 'alert' ? 'alert' : ins.type === 'opportunity' ? 'zap' : ins.type === 'insight' ? 'info' : 'target'} size={12} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-medium text-white mb-0.5">{ins.title}</div>
+                    <div className="text-[11px] text-gray-400 leading-relaxed">{ins.desc}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Market + Quick actions */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-white">Market News</div>
+            <button className="text-xs text-emerald">All news</button>
+          </div>
+          <div className="space-y-2">
+            {marketNews.map((n, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  n.sentiment === 'up' ? 'bg-emerald/10 text-emerald' :
+                  n.sentiment === 'down' ? 'bg-red-500/10 text-red-400' :
+                  'bg-gray-500/10 text-gray-400'
+                }`}>
+                  <Icon name={n.sentiment === 'up' ? 'arrowUp' : n.sentiment === 'down' ? 'arrowDown' : 'activity'} size={14} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-white">{n.title}</div>
+                  <div className="text-xs text-gray-400">{n.source} · {n.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="text-sm font-semibold text-white mb-4">Quick Actions</div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: 'Add Expense', icon: 'plus', color: '#10b981' },
+              { label: 'Transfer', icon: 'send', color: '#3b82f6' },
+              { label: 'Pay Bills', icon: 'receipt', color: '#d4af37' },
+              { label: 'Invest', icon: 'trending', color: '#8b5cf6' },
+              { label: 'Ask Finn', icon: 'sparkles', color: '#f0c654' },
+              { label: 'Reports', icon: 'file', color: '#ec4899' },
+            ].map((a, i) => (
+              <button key={i} className="p-3 rounded-xl glass hover:bg-white/5 transition text-left">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${a.color}15` }}>
+                  <Icon name={a.icon} size={14} style={{ color: a.color }} />
+                </div>
+                <div className="text-xs text-white">{a.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ FINN AI ADVISOR ============
+const FinnAdvisor = () => {
+  const [query, setQuery] = useState('');
+  const [messages, setMessages] = useState([
+    { role: 'finn', text: 'Good morning, Arjun! I\'ve analyzed your financial snapshot overnight. Here\'s what I found:', time: '9:00 AM' },
+    { role: 'finn', text: 'Your financial health improved by 24 points this month — excellent progress on reducing credit card debt. Your emergency fund is at 85% of target.', time: '9:00 AM' },
+  ]);
+  const [isThinking, setIsThinking] = useState(false);
+
+  const send = () => {
+    if (!query.trim()) return;
+    setMessages([...messages, { role: 'user', text: query, time: 'Now' }]);
+    setQuery('');
+    setIsThinking(true);
+    setTimeout(() => {
+      setIsThinking(false);
+      setMessages(m => [...m, {
+        role: 'finn',
+        text: 'Based on my analysis with the Budget and Investment agents, I recommend increasing your SIP by ₹2,000/month. This would help you reach your emergency fund target by October while maintaining your current lifestyle. Confidence: 94%.',
+        time: 'Now',
+        agents: ['Budget Agent', 'Investment Agent']
+      }]);
+    }, 1800);
+  };
+
+  return (
+    <div className="p-6 page-enter">
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Main chat area */}
+        <div className="lg:col-span-2 glass-strong rounded-2xl flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>
+          <div className="p-5 border-b border-white/5 flex items-center gap-3">
+            <div className="relative">
+              <div className="w-11 h-11 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+                <Icon name="sparkles" size={20} className="text-white" />
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald border-2 border-midnight-900"></span>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <div className="font-semibold text-white">Finn</div>
+                <div className="tag bg-emerald/10 text-emerald">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse"></span>
+                  Active
+                </div>
+              </div>
+              <div className="text-xs text-gray-400">Your AI financial companion · 9 agents coordinating</div>
+            </div>
+            <button className="p-2 rounded-lg glass hover:bg-white/5">
+              <Icon name="more" size={16} className="text-gray-400" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto scroll-area p-5 space-y-4">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}>
+                {m.role === 'finn' ? (
+                  <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center flex-shrink-0">
+                    <Icon name="sparkles" size={14} className="text-white" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 text-xs font-semibold">AK</div>
+                )}
+                <div className={`max-w-[75%] ${m.role === 'user' ? 'items-end' : ''}`}>
+                  <div className={`rounded-2xl px-4 py-3 ${m.role === 'user' ? 'gradient-emerald text-white' : 'glass'}`}>
+                    <div className="text-sm leading-relaxed">{m.text}</div>
+                    {m.agents && (
+                      <div className="flex gap-1.5 mt-2 pt-2 border-t border-white/5">
+                        {m.agents.map(a => (
+                          <span key={a} className="tag bg-white/5 text-gray-400 text-[10px]">
+                            <Icon name="brain" size={8} /> {a}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`text-[10px] text-gray-500 mt-1 ${m.role === 'user' ? 'text-right' : ''}`}>{m.time}</div>
+                </div>
+              </div>
+            ))}
+            {isThinking && (
+              <div className="flex gap-3 animate-fade-in">
+                <div className="w-8 h-8 rounded-lg gradient-emerald flex items-center justify-center">
+                  <Icon name="sparkles" size={14} className="text-white" />
+                </div>
+                <div className="glass rounded-2xl px-4 py-3 flex items-center gap-2">
+                  <div className="typing-dots"><span></span><span></span><span></span></div>
+                  <span className="text-xs text-gray-400">Finn is thinking...</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t border-white/5">
+            <div className="flex gap-2 mb-3 flex-wrap">
+              {['Analyze my spending', 'Optimize investments', 'Review loan options', 'Tax planning'].map(s => (
+                <button key={s} onClick={() => setQuery(s)} className="text-xs px-3 py-1.5 rounded-full glass hover:bg-white/5 text-gray-300">
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button className="p-3 rounded-xl glass hover:bg-white/5">
+                <Icon name="paperclip" size={16} className="text-gray-400" />
+              </button>
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && send()}
+                placeholder="Ask Finn anything about your finances..."
+                className="flex-1 px-4 py-3 rounded-xl text-sm"
+              />
+              <button onClick={send} className="btn-primary px-4 rounded-xl">
+                <Icon name="send" size={16} className="text-white" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Side panel */}
+        <div className="space-y-4">
+          <div className="glass rounded-2xl p-5">
+            <div className="text-sm font-semibold text-white mb-3">Today's Summary</div>
+            <div className="space-y-3">
+              {[
+                { label: 'Spent today', value: '₹2,840', sub: 'Food · Transport', color: '#d4af37' },
+                { label: 'Saved today', value: '₹1,240', sub: 'Auto-transfer', color: '#10b981' },
+                { label: 'Net worth', value: '₹48.24L', sub: '+₹12,400 today', color: '#3b82f6' },
+              ].map(s => (
+                <div key={s.label} className="flex items-center justify-between p-2.5 rounded-xl bg-white/3">
+                  <div>
+                    <div className="text-xs text-gray-400">{s.label}</div>
+                    <div className="text-sm font-semibold text-white">{s.value}</div>
+                    <div className="text-[10px] text-gray-500">{s.sub}</div>
+                  </div>
+                  <div className="w-1 h-8 rounded-full" style={{ background: s.color }}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass rounded-2xl p-5">
+            <div className="text-sm font-semibold text-white mb-3">Priority Alerts</div>
+            <div className="space-y-2">
+              {finnInsights.slice(0,3).map((a, i) => (
+                <div key={i} className="p-3 rounded-xl bg-white/3 hover:bg-white/5 transition cursor-pointer">
+                  <div className="flex items-start gap-2">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      a.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      a.priority === 'medium' ? 'bg-gold/20 text-gold' :
+                      'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      <Icon name={a.priority === 'high' ? 'alert' : a.priority === 'medium' ? 'zap' : 'info'} size={10} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-medium text-white">{a.title}</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{a.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass rounded-2xl p-5">
+            <div className="text-sm font-semibold text-white mb-3">Agent Activity</div>
+            <div className="space-y-2">
+              {agents.slice(0,4).map(a => (
+                <div key={a.name} className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${a.color}15` }}>
+                    <Icon name={a.icon} size={12} style={{ color: a.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-white truncate">{a.name}</div>
+                    <div className="text-[10px] text-gray-400">{a.status}</div>
+                  </div>
+                  <div className="text-[10px] font-mono" style={{ color: a.color }}>{a.confidence}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ AGENTS PANEL ============
+const AgentsPanel = () => (
+  <div className="p-6 page-enter">
+    <div className="glass-strong rounded-2xl p-6 mb-4">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl gradient-emerald flex items-center justify-center shadow-glow-emerald">
+          <Icon name="brain" size={20} className="text-white" />
+        </div>
+        <div>
+          <div className="text-lg font-bold text-white">Multi-Agent Intelligence</div>
+          <div className="text-xs text-gray-400">9 specialized agents working in coordination</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-3 mt-4">
+        {[
+          { label: 'Active', value: '4', color: '#10b981' },
+          { label: 'Analyzing', value: '2', color: '#d4af37' },
+          { label: 'Completed', value: '3', color: '#3b82f6' },
+          { label: 'Avg Confidence', value: '93%', color: '#8b5cf6' },
+        ].map(s => (
+          <div key={s.label} className="glass rounded-xl p-3">
+            <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
+            <div className="text-xs text-gray-400">{s.label}</div>
+          </div>
+        ))}
+      </div>
     </div>
 
-    <!-- Tab 2: Loan Analyzer Context -->
-    <div id="tab-loan" class="card hidden" style="max-width: 650px; margin: 0 auto;">
-        <h2 style="font-size: 18px; margin-bottom: 6px;">Document Risk Profile Analyzer</h2>
-        <p class="subtitle" style="margin-bottom: 20px;">Parses compliance thresholds and structural variations natively.</p>
-        
-        <div style="margin-bottom: 16px;">
-            <label for="loan-amount">Principal Evaluation Limit ($)</label>
-            <input type="number" id="loan-amount" class="input-field" value="250000" style="width: 100%;">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {agents.map((a, i) => (
+        <div key={a.name} className="agent-card glass rounded-2xl p-5">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${a.color}20` }}>
+                <Icon name={a.icon} size={20} style={{ color: a.color }} />
+              </div>
+              <div>
+                <div className="font-semibold text-white text-sm">{a.name}</div>
+                <div className="text-xs text-gray-400">{a.role}</div>
+              </div>
+            </div>
+            <div className={`tag ${
+              a.status === 'active' ? 'bg-emerald/10 text-emerald' :
+              a.status === 'analyzing' ? 'bg-gold/10 text-gold' :
+              a.status === 'thinking' ? 'bg-blue-500/10 text-blue-400' :
+              a.status === 'completed' ? 'bg-purple-500/10 text-purple-400' :
+              'bg-white/5 text-gray-400'
+            }`}>
+              {a.status === 'analyzing' && <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>}
+              {a.status === 'thinking' && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>}
+              {a.status}
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-gray-400">Confidence</span>
+              <span className="font-mono font-semibold" style={{ color: a.color }}>{a.confidence}%</span>
+            </div>
+            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full progress-bar rounded-full" style={{ width: `${a.confidence}%`, background: a.color }}></div>
+            </div>
+          </div>
+
+          <div className="text-xs text-gray-400 p-3 rounded-xl bg-white/3">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Latest output</div>
+            {a.status === 'completed' && 'Analysis complete. No action required.'}
+            {a.status === 'analyzing' && 'Reviewing recent transactions for anomalies...'}
+            {a.status === 'thinking' && 'Evaluating portfolio rebalancing options...'}
+            {a.status === 'active' && 'Monitoring real-time financial data.'}
+            {a.status === 'idle' && 'Waiting for new tasks.'}
+          </div>
         </div>
-        
-        <div style="margin-bottom: 16px;">
-            <label for="loan-text">Raw Clause Data Input</label>
-            <textarea id="loan-text" class="input-field" placeholder="Paste structural text or legal contract details here..."></textarea>
+      ))}
+    </div>
+  </div>
+);
+
+// ============ BUDGET PLANNER ============
+const BudgetPlanner = () => {
+  const budgetData = [
+    { category: 'Housing', budget: 30000, spent: 28000 },
+    { category: 'Food', budget: 15000, spent: 12000 },
+    { category: 'Transport', budget: 10000, spent: 8000 },
+    { category: 'Shopping', budget: 8000, spent: 9500 },
+    { category: 'Entertainment', budget: 6000, spent: 5500 },
+    { category: 'Utilities', budget: 5000, spent: 4200 },
+  ];
+
+  return (
+    <div className="p-6 space-y-4 page-enter">
+      <div className="grid lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Monthly Budget', value: '₹74,000', sub: 'Allocated', icon: 'wallet', color: '#10b981' },
+          { label: 'Spent', value: '₹67,200', sub: '90.8% used', icon: 'receipt', color: '#d4af37' },
+          { label: 'Remaining', value: '₹6,800', sub: '15 days left', icon: 'piggyBank', color: '#3b82f6' },
+          { label: 'Saved vs Budget', value: '₹4,200', sub: '+6.2% under', icon: 'trending', color: '#8b5cf6' },
+        ].map((m,i) => (
+          <div key={i} className="glass rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-gray-400">{m.label}</span>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+                <Icon name={m.icon} size={14} style={{ color: m.color }} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-white">{m.value}</div>
+            <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="text-sm font-semibold text-white">Budget vs Actual</div>
+            <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg">+ Add Category</button>
+          </div>
+          <div className="space-y-4">
+            {budgetData.map(b => {
+              const pct = Math.min(100, Math.round((b.spent / b.budget) * 100));
+              const over = b.spent > b.budget;
+              return (
+                <div key={b.category}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm text-white">{b.category}</span>
+                    <span className="text-xs text-gray-400 font-mono">₹{b.spent.toLocaleString()} / ₹{b.budget.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className={`h-full progress-bar rounded-full ${over ? 'bg-red-500' : 'gradient-emerald'}`} style={{ width: `${pct}%` }}></div>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className={`text-[10px] ${over ? 'text-red-400' : 'text-gray-500'}`}>
+                      {over ? `Over by ₹${(b.spent - b.budget).toLocaleString()}` : `${pct}% used`}
+                    </span>
+                    <span className="text-[10px] text-gray-500">₹{Math.abs(b.budget - b.spent).toLocaleString()} {over ? 'over' : 'left'}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        
-        <button type="button" class="btn-submit btn-wide" onclick="processBackendAnalysis()">Run Analysis Engine</button>
-        
-        <div id="analysis-result" class="result-box hidden"></div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+              <Icon name="sparkles" size={14} className="text-white" />
+            </div>
+            <div className="text-sm font-semibold text-white">AI Suggestions</div>
+          </div>
+          <div className="space-y-3">
+            {[
+              { title: 'Reduce shopping', desc: 'Cut ₹1,500 by using coupons this month', save: '₹1,500' },
+              { title: 'Cancel unused subs', desc: '2 subscriptions unused for 60+ days', save: '₹898' },
+              { title: 'Meal prep Sundays', desc: 'Reduce food delivery by 40%', save: '₹3,200' },
+              { title: 'Switch electricity plan', desc: 'Time-of-use plan saves 15%', save: '₹630' },
+            ].map((s, i) => (
+              <div key={i} className="p-3 rounded-xl bg-white/3 hover:bg-white/5 transition cursor-pointer">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="text-xs font-medium text-white">{s.title}</div>
+                  <div className="text-xs font-semibold text-emerald">{s.save}</div>
+                </div>
+                <div className="text-[11px] text-gray-400">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 rounded-xl gradient-emerald text-center">
+            <div className="text-xs text-white/80">Total potential savings</div>
+            <div className="text-xl font-bold text-white">₹6,228/mo</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Subscription Tracker</div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { name: 'Netflix', price: 649, status: 'active', color: '#e50914' },
+            { name: 'Spotify', price: 119, status: 'active', color: '#1db954' },
+            { name: 'Adobe CC', price: 1999, status: 'unused', color: '#ff0000' },
+            { name: 'Gym', price: 2500, status: 'active', color: '#10b981' },
+          ].map(s => (
+            <div key={s.name} className="p-3 rounded-xl glass flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${s.color}20` }}>
+                <div className="w-4 h-4 rounded" style={{ background: s.color }}></div>
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-white">{s.name}</div>
+                <div className="text-xs text-gray-400">₹{s.price}/mo</div>
+              </div>
+              {s.status === 'unused' && <span className="tag bg-red-500/10 text-red-400">unused</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ EXPENSE TRACKER ============
+const ExpenseTracker = () => {
+  const [filter, setFilter] = useState('all');
+  const filtered = filter === 'all' ? transactions : transactions.filter(t => filter === 'income' ? t.amount > 0 : t.amount < 0);
+
+  return (
+    <div className="p-6 space-y-4 page-enter">
+      <div className="grid lg:grid-cols-4 gap-4">
+        {[
+          { label: 'This Month', value: '₹75,420', change: '-3.1%', icon: 'receipt', color: '#10b981' },
+          { label: 'Daily Avg', value: '₹2,514', change: '-1.8%', icon: 'calendar', color: '#d4af37' },
+          { label: 'Largest', value: '₹28,000', sub: 'Rent', icon: 'home', color: '#3b82f6' },
+          { label: 'Categories', value: '7', sub: 'Active', icon: 'layers', color: '#8b5cf6' },
+        ].map((m,i) => (
+          <div key={i} className="glass rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-gray-400">{m.label}</span>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+                <Icon name={m.icon} size={14} style={{ color: m.color }} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-white">{m.value}</div>
+            <div className="text-xs text-gray-400 mt-1">{m.change || m.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="text-sm font-semibold text-white">Spending Trend</div>
+          <div className="flex gap-2">
+            {['Week','Month','Year'].map((p,i) => (
+              <button key={p} className={`px-3 py-1 rounded-lg text-xs ${i === 1 ? 'gradient-emerald text-white' : 'text-gray-400 hover:bg-white/5'}`}>{p}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ width: '100%', height: 260 }}>
+          <ResponsiveContainer>
+            <BarChart data={cashFlowData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              <Bar dataKey="expense" fill="#10b981" radius={[8,8,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold text-white">All Transactions</div>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 p-1 rounded-lg glass">
+              {['all','income','expense'].map(f => (
+                <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 rounded text-xs capitalize ${filter === f ? 'gradient-emerald text-white' : 'text-gray-400'}`}>{f}</button>
+              ))}
+            </div>
+            <button className="p-2 rounded-lg glass hover:bg-white/5">
+              <Icon name="filter" size={14} className="text-gray-400" />
+            </button>
+            <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
+              <Icon name="plus" size={12} /> Add
+            </button>
+          </div>
+        </div>
+        <div className="space-y-1">
+          {filtered.map(t => (
+            <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${t.color}15` }}>
+                <Icon name={t.icon} size={16} style={{ color: t.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-white">{t.name}</div>
+                <div className="text-xs text-gray-400">{t.category} · {t.date}</div>
+              </div>
+              <div className="text-right">
+                <div className={`text-sm font-semibold ${t.amount > 0 ? 'text-emerald' : 'text-white'}`}>
+                  {t.amount > 0 ? '+' : '-'}₹{Math.abs(t.amount).toLocaleString()}
+                </div>
+              </div>
+              <button className="p-1.5 rounded-lg hover:bg-white/5">
+                <Icon name="more" size={14} className="text-gray-400" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ LOAN ANALYZER ============
+const LoanAnalyzer = () => (
+  <div className="p-6 space-y-4 page-enter">
+      <div className="glass-strong rounded-2xl p-8 border-dashed border-2 border-white/10 text-center hover:border-emerald/30 transition cursor-pointer">
+        <div className="w-16 h-16 mx-auto rounded-2xl gradient-emerald flex items-center justify-center shadow-glow-emerald mb-4">
+          <Icon name="upload" size={28} className="text-white" />
+        </div>
+        <div className="text-lg font-semibold text-white mb-1">Drop your loan documents here</div>
+        <div className="text-sm text-gray-400 mb-4">PDF, DOC, or images up to 25MB · Finn will analyze them in seconds</div>
+        <button className="btn-primary text-white text-sm font-medium px-6 py-2.5 rounded-xl">Browse Files</button>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="glass rounded-2xl p-6">
+          <div className="text-sm font-semibold text-white mb-4">Loan Summary</div>
+          <div className="space-y-3">
+            {[
+              { label: 'Principal', value: '₹45,00,000' },
+              { label: 'Interest Rate', value: '8.5% p.a.' },
+              { label: 'Tenure', value: '20 years' },
+              { label: 'EMI', value: '₹39,042' },
+              { label: 'Total Interest', value: '₹48,70,080' },
+              { label: 'Total Payment', value: '₹93,70,080' },
+            ].map(s => (
+              <div key={s.label} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <span className="text-xs text-gray-400">{s.label}</span>
+                <span className="text-sm font-semibold text-white font-mono">{s.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="text-sm font-semibold text-white mb-4">Interest Breakdown</div>
+          <div style={{ width: '100%', height: 180 }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={[
+                  { name: 'Principal', value: 4500000, color: '#10b981' },
+                  { name: 'Interest', value: 4870080, color: '#d4af37' },
+                ]} dataKey="value" innerRadius={50} outerRadius={75}>
+                  <Cell fill="#10b981"/>
+                  <Cell fill="#d4af37"/>
+                </Pie>
+                <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-2 mt-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald"></div><span className="text-gray-300">Principal</span></div>
+              <span className="font-mono text-gray-400">48%</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gold"></div><span className="text-gray-300">Interest</span></div>
+              <span className="font-mono text-gray-400">52%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <Icon name="alert" size={14} className="text-red-400" />
+            </div>
+            <div className="text-sm font-semibold text-white">Risk Analysis</div>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'Prepayment Penalty', risk: 'high', desc: '3% of outstanding in first 2 years' },
+              { label: 'Floating Rate Clause', risk: 'medium', desc: 'Rate can increase by 2%' },
+              { label: 'Late Fee', risk: 'low', desc: '2% per month on overdue' },
+              { label: 'Hidden Charges', risk: 'medium', desc: 'Processing fee not disclosed' },
+            ].map((r, i) => (
+              <div key={i} className="p-3 rounded-xl bg-white/3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-white">{r.label}</span>
+                  <span className={`tag ${r.risk === 'high' ? 'bg-red-500/10 text-red-400' : r.risk === 'medium' ? 'bg-gold/10 text-gold' : 'bg-emerald/10 text-emerald'}`}>{r.risk}</span>
+                </div>
+                <div className="text-[11px] text-gray-400">{r.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+              <Icon name="sparkles" size={14} className="text-white" />
+            </div>
+            <div className="text-sm font-semibold text-white">Finn's Recommendations</div>
+          </div>
+          <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
+            <Icon name="download" size={12} /> Download Report
+          </button>
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          {[
+            { title: 'Refinance Opportunity', desc: 'Current market rates are 0.75% lower. Refinancing saves ₹3,200/month.', confidence: 96, color: '#10b981' },
+            { title: 'Prepay Before Year 3', desc: 'Avoid 3% prepayment penalty by waiting. Prepay ₹2L after 24 months.', confidence: 94, color: '#d4af37' },
+            { title: 'Increase EMI by 10%', desc: 'Paying ₹42,946 instead reduces tenure by 3.5 years and saves ₹12L.', confidence: 98, color: '#3b82f6' },
+            { title: 'Negotiate Processing Fee', desc: 'Hidden ₹25,000 processing fee can likely be waived with negotiation.', confidence: 89, color: '#8b5cf6' },
+          ].map((r, i) => (
+            <div key={i} className="p-4 rounded-xl glass hover:bg-white/5 transition">
+              <div className="flex items-start justify-between mb-2">
+                <div className="text-sm font-semibold text-white">{r.title}</div>
+                <div className="text-xs font-mono" style={{ color: r.color }}>{r.confidence}%</div>
+              </div>
+              <div className="text-xs text-gray-400 mb-3">{r.desc}</div>
+              <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full progress-bar rounded-full" style={{ width: `${r.confidence}%`, background: r.color }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+);
+
+// ============ INVESTMENT PLANNER ============
+const InvestmentPlanner = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="grid lg:grid-cols-4 gap-4">
+      {[
+        { label: 'Portfolio Value', value: '₹21,74,500', change: '+12.4%', icon: 'wallet', color: '#10b981' },
+        { label: 'Invested', value: '₹18,50,000', sub: 'Principal', icon: 'piggyBank', color: '#d4af37' },
+        { label: 'Returns', value: '₹3,24,500', change: '+17.5%', icon: 'trending', color: '#3b82f6' },
+        { label: 'XIRR', value: '14.8%', sub: 'Annualized', icon: 'activity', color: '#8b5cf6' },
+      ].map((m,i) => (
+        <div key={i} className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-gray-400">{m.label}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+              <Icon name={m.icon} size={14} style={{ color: m.color }} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white">{m.value}</div>
+          <div className="text-xs text-gray-400 mt-1">{m.change || m.sub}</div>
+        </div>
+      ))}
     </div>
 
-    <!-- INTERNAL BACKEND LOGIC CONTROLLER -->
-    <script>
-        // Tab Router
-        function switchTab(tab) {
-            const dashTab = document.getElementById('tab-dashboard');
-            const loanTab = document.getElementById('tab-loan');
-            const dashBtn = document.getElementById('btn-dash');
-            const loanBtn = document.getElementById('btn-loan');
-            
-            if (tab === 'dashboard') {
-                dashTab.classList.remove('hidden');
-                loanTab.classList.add('hidden');
-                dashBtn.classList.add('active');
-                loanBtn.classList.remove('active');
-            } else {
-                dashTab.classList.add('hidden');
-                loanTab.classList.remove('hidden');
-                dashBtn.classList.remove('active');
-                loanBtn.classList.add('active');
-            }
-        }
+    <div className="grid lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2 glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold text-white">Portfolio Performance</div>
+          <div className="flex gap-2">
+            {['1M','3M','6M','1Y','ALL'].map((p,i) => (
+              <button key={p} className={`px-3 py-1 rounded-lg text-xs ${i === 4 ? 'gradient-emerald text-white' : 'text-gray-400 hover:bg-white/5'}`}>{p}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ width: '100%', height: 280 }}>
+          <ResponsiveContainer>
+            <LineChart data={performanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              <Legend wrapperStyle={{ fontSize: 11 }}/>
+              <Line type="monotone" dataKey="portfolio" stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 3 }}/>
+              <Line type="monotone" dataKey="benchmark" stroke="#6b7280" strokeWidth={1.5} strokeDasharray="4 4" dot={false}/>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-        // Chatbot Processing Logic (Simulated Backend Processing)
-        function handleChatSubmit(e) {
-            e.preventDefault();
-            const inputEl = document.getElementById('chat-input');
-            const chatBox = document.getElementById('chat-box');
-            const query = inputEl.value.trim();
-            
-            if (!query) return;
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Asset Allocation</div>
+        <div style={{ width: '100%', height: 200 }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie data={portfolioData} dataKey="value" innerRadius={55} outerRadius={80} paddingAngle={2}>
+                {portfolioData.map((e, i) => <Cell key={i} fill={e.color}/>)}
+              </Pie>
+              <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="space-y-2 mt-2">
+          {portfolioData.map(p => (
+            <div key={p.name} className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{background: p.color}}></div>
+                <span className="text-gray-300">{p.name}</span>
+              </div>
+              <span className="text-gray-400 font-mono">{p.value}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
 
-            // Render User Input View
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.textContent = query;
-            chatBox.appendChild(userMsg);
-            inputEl.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
+    <div className="grid lg:grid-cols-2 gap-4">
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Holdings</div>
+        <div className="space-y-2">
+          {[
+            { name: 'Nifty 50 Index Fund', type: 'Mutual Fund', value: 650000, change: 14.2, color: '#10b981' },
+            { name: 'PPFAS Flexi Cap', type: 'Mutual Fund', value: 420000, change: 18.5, color: '#34d399' },
+            { name: 'HDFC Bank Stocks', type: 'Equity', value: 280000, change: 8.4, color: '#d4af37' },
+            { name: 'Sovereign Gold Bonds', type: 'Gold', value: 220000, change: 12.1, color: '#f0c654' },
+            { name: 'PPF Account', type: 'Fixed Income', value: 350000, change: 7.1, color: '#3b82f6' },
+            { name: 'EPF', type: 'Retirement', value: 254500, change: 8.5, color: '#8b5cf6' },
+          ].map((h, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${h.color}15` }}>
+                <Icon name="trending" size={16} style={{ color: h.color }} />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-white">{h.name}</div>
+                <div className="text-xs text-gray-400">{h.type}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-semibold text-white font-mono">₹{(h.value/1000).toFixed(0)}K</div>
+                <div className="text-xs text-emerald flex items-center justify-end gap-0.5">
+                  <Icon name="arrowUp" size={9} /> +{h.change}%
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-            // Native Response Compilation Pipeline
-            setTimeout(() => {
-                const assistantMsg = document.createElement('div');
-                assistantMsg.className = 'message assistant';
-                assistantMsg.textContent = `Processing localized prompt queue... Target parameters associated with "${query}" calculated. Variance thresholds remain within optimal bounds.`;
-                chatBox.appendChild(assistantMsg);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 600);
-        }
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+            <Icon name="sparkles" size={14} className="text-white" />
+          </div>
+          <div className="text-sm font-semibold text-white">Retirement Calculator</div>
+        </div>
+        <div className="space-y-3 mb-4">
+          <div>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-gray-400">Current age</span>
+              <span className="text-white font-mono">28</span>
+            </div>
+            <input type="range" min="20" max="60" defaultValue="28" className="w-full accent-emerald"/>
+          </div>
+          <div>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-gray-400">Retirement age</span>
+              <span className="text-white font-mono">55</span>
+            </div>
+            <input type="range" min="40" max="70" defaultValue="55" className="w-full accent-emerald"/>
+          </div>
+          <div>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-gray-400">Monthly SIP</span>
+              <span className="text-white font-mono">₹25,000</span>
+            </div>
+            <input type="range" min="5000" max="100000" step="1000" defaultValue="25000" className="w-full accent-emerald"/>
+          </div>
+        </div>
+        <div className="p-4 rounded-xl gradient-emerald">
+          <div className="text-xs text-white/80 mb-1">Projected corpus at retirement</div>
+          <div className="text-3xl font-bold text-white">₹8.4 Cr</div>
+          <div className="text-xs text-white/80 mt-1">Assuming 12% annual return</div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
-        // Document Analyzer Processing Logic (Simulated Structural Parser)
-        function processBackendAnalysis() {
-            const amt = document.getElementById('loan-amount').value || 0;
-            const text = document.getElementById('loan-text').value.trim();
-            const resultBox = document.getElementById('analysis-result');
-            
-            resultBox.classList.remove('hidden');
-            
-            if (!text) {
-                resultBox.style.borderLeftColor = '#ef4444';
-                resultBox.innerHTML = `<strong>Execution Alert:</strong> Processing terminated. Analysis requires structural raw text inputs.`;
-                return;
-            }
+// ============ INSURANCE ============
+const Insurance = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="grid lg:grid-cols-4 gap-4">
+      {[
+        { label: 'Total Coverage', value: '₹1.2 Cr', sub: 'Across 4 policies', icon: 'shield', color: '#10b981' },
+        { label: 'Annual Premium', value: '₹84,500', sub: 'Next: Aug 15', icon: 'receipt', color: '#d4af37' },
+        { label: 'Coverage Gap', value: '₹35L', sub: 'Recommended', icon: 'alert', color: '#ef4444' },
+        { label: 'Claim Ratio', value: '94%', sub: 'Provider avg', icon: 'award', color: '#8b5cf6' },
+      ].map((m,i) => (
+        <div key={i} className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-gray-400">{m.label}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+              <Icon name={m.icon} size={14} style={{ color: m.color }} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white">{m.value}</div>
+          <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+        </div>
+      ))}
+    </div>
 
-            resultBox.style.borderLeftColor = '#10b981';
-            resultBox.innerHTML = `<strong>Processing Complete:</strong> Evaluated asset threshold allocation of $${parseInt(amt).toLocaleString()}. Core parser located 0 conflicting liability parameters within the payload text. Verification index matches standard safety profiles perfectly.`;
-        }
-    </script>
+    <div className="grid lg:grid-cols-2 gap-4">
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Active Policies</div>
+        <div className="space-y-3">
+          {[
+            { name: 'Term Life Insurance', provider: 'LIC', cover: '₹1 Cr', premium: '₹12,500/yr', status: 'active', color: '#10b981' },
+            { name: 'Health Insurance (Family)', provider: 'Star Health', cover: '₹15L', premium: '₹28,400/yr', status: 'active', color: '#3b82f6' },
+            { name: 'Car Insurance', provider: 'ICICI Lombard', cover: '₹8L', premium: '₹9,800/yr', status: 'renewal', color: '#d4af37' },
+            { name: 'Home Insurance', provider: 'HDFC Ergo', cover: '₹50L', premium: '₹4,200/yr', status: 'active', color: '#8b5cf6' },
+          ].map((p, i) => (
+            <div key={i} className="p-4 rounded-xl glass hover:bg-white/5 transition">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${p.color}15` }}>
+                    <Icon name="shield" size={18} style={{ color: p.color }} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">{p.name}</div>
+                    <div className="text-xs text-gray-400">{p.provider}</div>
+                  </div>
+                </div>
+                <span className={`tag ${p.status === 'renewal' ? 'bg-gold/10 text-gold' : 'bg-emerald/10 text-emerald'}`}>
+                  {p.status === 'renewal' ? 'Renewal due' : 'Active'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                <div>
+                  <div className="text-[10px] text-gray-500">Coverage</div>
+                  <div className="text-xs font-semibold text-white">{p.cover}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-500">Premium</div>
+                  <div className="text-xs font-semibold text-white">{p.premium}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+            <Icon name="sparkles" size={14} className="text-white" />
+          </div>
+          <div className="text-sm font-semibold text-white">Coverage Analysis</div>
+        </div>
+        <div className="space-y-3">
+          {[
+            { label: 'Life Insurance', status: 'adequate', desc: '20x annual income', color: '#10b981' },
+            { label: 'Health Insurance', status: 'gap', desc: 'Consider ₹25L for metro city', color: '#ef4444' },
+            { label: 'Disability Cover', status: 'missing', desc: 'No disability insurance found', color: '#ef4444' },
+            { label: 'Critical Illness', status: 'missing', desc: 'Recommended for age 28+', color: '#d4af37' },
+            { label: 'Personal Accident', status: 'gap', desc: 'Current cover insufficient', color: '#d4af37' },
+          ].map((c, i) => (
+            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/3">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                c.status === 'adequate' ? 'bg-emerald/20 text-emerald' :
+                c.status === 'gap' ? 'bg-gold/20 text-gold' :
+                'bg-red-500/20 text-red-400'
+              }`}>
+                <Icon name={c.status === 'adequate' ? 'check' : c.status === 'gap' ? 'alert' : 'x'} size={12} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-white">{c.label}</div>
+                  <span className={`tag ${
+                    c.status === 'adequate' ? 'bg-emerald/10 text-emerald' :
+                    c.status === 'gap' ? 'bg-gold/10 text-gold' :
+                    'bg-red-500/10 text-red-400'
+                  }`}>{c.status}</span>
+                </div>
+                <div className="text-[11px] text-gray-400 mt-0.5">{c.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="w-full btn-primary text-white text-sm font-medium py-2.5 rounded-xl mt-4">
+          Get Personalized Recommendations
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// ============ TAX PLANNER ============
+const TaxPlanner = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="grid lg:grid-cols-4 gap-4">
+      {[
+        { label: 'Gross Income', value: '₹14.2L', sub: 'FY 2025-26', icon: 'trending', color: '#10b981' },
+        { label: 'Taxable Income', value: '₹11.8L', sub: 'After deductions', icon: 'calculator', color: '#d4af37' },
+        { label: 'Estimated Tax', value: '₹1,42,500', sub: 'New regime', icon: 'receipt', color: '#3b82f6' },
+        { label: 'Potential Savings', value: '₹38,400', sub: 'With optimization', icon: 'zap', color: '#8b5cf6' },
+      ].map((m,i) => (
+        <div key={i} className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-gray-400">{m.label}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+              <Icon name={m.icon} size={14} style={{ color: m.color }} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white">{m.value}</div>
+          <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2 glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold text-white">Tax Regime Comparison</div>
+          <div className="flex gap-2 p-1 rounded-lg glass">
+            <button className="px-3 py-1 rounded text-xs gradient-emerald text-white">New Regime</button>
+            <button className="px-3 py-1 rounded text-xs text-gray-400">Old Regime</button>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {[
+            { section: 'Income', items: [
+              { label: 'Salary Income', value: '₹11,40,000' },
+              { label: 'Business Income', value: '₹2,22,000' },
+              { label: 'Capital Gains', value: '₹58,000' },
+            ]},
+            { section: 'Deductions', items: [
+              { label: 'Standard Deduction', value: '₹50,000' },
+              { label: '80C (PPF, ELSS, LIC)', value: '₹1,50,000' },
+              { label: '80D (Health Insurance)', value: '₹25,000' },
+              { label: 'NPS (80CCD)', value: '₹50,000' },
+              { label: 'Home Loan Interest (80E)', value: '₹62,000' },
+            ]},
+          ].map((s, i) => (
+            <div key={i}>
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">{s.section}</div>
+              <div className="space-y-1">
+                {s.items.map(item => (
+                  <div key={item.label} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/3">
+                    <span className="text-sm text-gray-300">{item.label}</span>
+                    <span className="text-sm font-semibold text-white font-mono">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+            <Icon name="sparkles" size={14} className="text-white" />
+          </div>
+          <div className="text-sm font-semibold text-white">AI Optimization</div>
+        </div>
+        <div className="space-y-3">
+          {[
+            { title: 'Increase 80C', desc: 'Add ₹30K to ELSS before March', save: '₹9,300' },
+            { title: 'NPS Tier-I', desc: 'Additional ₹50K deduction available', save: '₹15,500' },
+            { title: 'HRA Claim', desc: 'Submit rent receipts for exemption', save: '₹8,400' },
+            { title: 'LTCG Harvest', desc: 'Book ₹1L loss to offset gains', save: '₹5,200' },
+          ].map((o, i) => (
+            <div key={i} className="p-3 rounded-xl bg-white/3 hover:bg-white/5 transition cursor-pointer">
+              <div className="flex items-start justify-between mb-1">
+                <div className="text-xs font-medium text-white">{o.title}</div>
+                <div className="text-xs font-semibold text-emerald">{o.save}</div>
+              </div>
+              <div className="text-[11px] text-gray-400">{o.desc}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 p-3 rounded-xl gradient-emerald text-center">
+          <div className="text-xs text-white/80">Total tax savings possible</div>
+          <div className="text-xl font-bold text-white">₹38,400</div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ============ GOALS ============
+const Goals = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-lg font-bold text-white">Your Financial Goals</div>
+        <div className="text-xs text-gray-400">Track progress and adjust strategies</div>
+      </div>
+      <button className="btn-primary text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2">
+        <Icon name="plus" size={14} /> New Goal
+      </button>
+    </div>
+
+    <div className="grid md:grid-cols-2 gap-4">
+      {goals.map((g, i) => {
+        const pct = Math.round((g.current / g.target) * 100);
+        const remaining = g.target - g.current;
+        const monthlyNeeded = Math.round(remaining / ((new Date(g.deadline + '-12-31').getFullYear() - 2026) * 12));
+        return (
+          <div key={i} className="glass rounded-2xl p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${g.color}20` }}>
+                  <Icon name={g.icon} size={22} style={{ color: g.color }} />
+                </div>
+                <div>
+                  <div className="font-semibold text-white">{g.name}</div>
+                  <div className="text-xs text-gray-400">Target: {g.deadline}</div>
+                </div>
+              </div>
+              <button className="p-1.5 rounded-lg hover:bg-white/5">
+                <Icon name="more" size={14} className="text-gray-400" />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400">Progress</span>
+                <span className="text-sm font-bold" style={{ color: g.color }}>{pct}%</span>
+              </div>
+              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full progress-bar rounded-full" style={{ width: `${pct}%`, background: g.color }}></div>
+              </div>
+              <div className="flex items-center justify-between mt-2 text-xs">
+                <span className="text-gray-400 font-mono">₹{(g.current/100000).toFixed(2)}L saved</span>
+                <span className="text-gray-400 font-mono">₹{(g.target/100000).toFixed(2)}L target</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/5">
+              <div>
+                <div className="text-[10px] text-gray-500">Remaining</div>
+                <div className="text-xs font-semibold text-white font-mono">₹{(remaining/100000).toFixed(1)}L</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-500">Monthly SIP</div>
+                <div className="text-xs font-semibold text-white font-mono">₹{monthlyNeeded.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-500">Success Rate</div>
+                <div className="text-xs font-semibold" style={{ color: g.color }}>{pct > 50 ? '87%' : '64%'}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+// ============ REPORTS ============
+const Reports = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="glass-strong rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <div className="text-lg font-bold text-white">Financial Reports</div>
+          <div className="text-xs text-gray-400">Comprehensive analysis of your financial health</div>
+        </div>
+        <button className="btn-primary text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2">
+          <Icon name="download" size={14} /> Generate PDF
+        </button>
+      </div>
+      <div className="grid md:grid-cols-4 gap-3">
+        {[
+          { title: 'Monthly Summary', date: 'Jul 2026', pages: 12, type: 'summary' },
+          { title: 'Investment Report', date: 'Q2 2026', pages: 24, type: 'investment' },
+          { title: 'Tax Analysis', date: 'FY 2025-26', pages: 18, type: 'tax' },
+          { title: 'Net Worth Statement', date: 'Jul 2026', pages: 8, type: 'networth' },
+        ].map((r, i) => (
+          <div key={i} className="glass rounded-xl p-4 hover:bg-white/5 transition cursor-pointer">
+            <div className="w-full h-24 rounded-lg bg-gradient-to-br from-emerald/10 to-gold/10 mb-3 flex items-center justify-center">
+              <Icon name="file" size={32} className="text-emerald" />
+            </div>
+            <div className="text-sm font-semibold text-white">{r.title}</div>
+            <div className="text-xs text-gray-400 mt-1">{r.date} · {r.pages} pages</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="glass rounded-2xl p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-7 h-7 rounded-lg gradient-emerald flex items-center justify-center">
+          <Icon name="sparkles" size={14} className="text-white" />
+        </div>
+        <div className="text-sm font-semibold text-white">AI Summary — July 2026</div>
+      </div>
+      <div className="prose prose-invert max-w-none text-sm text-gray-300 leading-relaxed space-y-3">
+        <p>Your financial health score improved by <span className="text-emerald font-semibold">24 points</span> this month, reaching 847/1000. This places you in the top 15% of users in your age group.</p>
+        <p>Key highlights: Your savings rate of 38.4% exceeds the recommended 30%. Debt-to-income ratio improved to 0.38 from 0.42. Emergency fund is at 85% of target.</p>
+        <p>Recommendations: Increase SIP by ₹2,000 to reach emergency fund target by October. Consider refinancing home loan to save ₹8,400/month. Review insurance coverage — disability cover is missing.</p>
+      </div>
+    </div>
+
+    <div className="grid lg:grid-cols-2 gap-4">
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Annual Overview</div>
+        <div style={{ width: '100%', height: 240 }}>
+          <ResponsiveContainer>
+            <BarChart data={cashFlowData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              <Legend wrapperStyle={{ fontSize: 11 }}/>
+              <Bar dataKey="income" fill="#10b981" radius={[6,6,0,0]}/>
+              <Bar dataKey="expense" fill="#d4af37" radius={[6,6,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Net Worth Timeline</div>
+        <div style={{ width: '100%', height: 240 }}>
+          <ResponsiveContainer>
+            <AreaChart data={[
+              { month: 'Jan', value: 38 },
+              { month: 'Feb', value: 40 },
+              { month: 'Mar', value: 42 },
+              { month: 'Apr', value: 43 },
+              { month: 'May', value: 45 },
+              { month: 'Jun', value: 47 },
+              { month: 'Jul', value: 48.24 },
+            ]}>
+              <defs>
+                <linearGradient id="networthGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5}/>
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{ background: '#131a2b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}/>
+              <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fill="url(#networthGrad)"/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ============ DOCUMENTS ============
+const Documents = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="glass-strong rounded-2xl p-6 border-dashed border-2 border-white/10 text-center">
+      <Icon name="upload" size={28} className="text-emerald mx-auto mb-2" />
+      <div className="text-sm font-semibold text-white mb-1">Upload new document</div>
+      <div className="text-xs text-gray-400">Drop files or click to browse · Finn will auto-categorize</div>
+    </div>
+
+    <div className="glass rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-sm font-semibold text-white">All Documents ({documents.length})</div>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input placeholder="Search documents..." className="pl-9 pr-4 py-1.5 rounded-lg text-xs w-48"/>
+          </div>
+          <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
+            <Icon name="filter" size={12} /> Filter
+          </button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {documents.map((d, i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <Icon name={d.icon} size={16} className="text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm text-white truncate">{d.name}</div>
+              <div className="text-xs text-gray-400">{d.size} · {d.date}</div>
+            </div>
+            <span className="tag bg-white/5 text-gray-400 capitalize">{d.type}</span>
+            <div className="flex gap-1">
+              <button className="p-1.5 rounded-lg hover:bg-white/5"><Icon name="eye" size={14} className="text-gray-400" /></button>
+              <button className="p-1.5 rounded-lg hover:bg-white/5"><Icon name="download" size={14} className="text-gray-400" /></button>
+              <button className="p-1.5 rounded-lg hover:bg-white/5"><Icon name="trash" size={14} className="text-gray-400" /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ============ CALENDAR ============
+const Calendar = () => {
+  const days = Array.from({ length: 35 }, (_, i) => i - 2);
+  const currentMonth = 'July 2026';
+
+  return (
+    <div className="p-6 space-y-4 page-enter">
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="text-lg font-bold text-white">{currentMonth}</div>
+            <div className="flex gap-2">
+              <button className="p-2 rounded-lg glass hover:bg-white/5"><Icon name="chevronRight" size={14} className="text-gray-400 rotate-180" /></button>
+              <button className="p-2 rounded-lg glass hover:bg-white/5"><Icon name="chevronRight" size={14} className="text-gray-400" /></button>
+              <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg">Today</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+              <div key={d} className="text-center text-xs text-gray-500 font-medium py-2">{d}</div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((d, i) => {
+              const isToday = d === 16;
+              const event = calendarEvents.find(e => e.date === d);
+              const isCurrentMonth = d > 0 && d <= 31;
+              return (
+                <div key={i} className={`aspect-square p-1.5 rounded-lg text-xs relative ${
+                  !isCurrentMonth ? 'text-gray-600' : 'text-gray-300 hover:bg-white/5 cursor-pointer'
+                } ${isToday ? 'gradient-emerald text-white' : ''}`}>
+                  <div className="font-medium">{d > 0 && d <= 31 ? d : d <= 0 ? 30 + d : d - 31}</div>
+                  {event && !isToday && (
+                    <div className="absolute bottom-1 left-1 right-1 flex gap-0.5 justify-center">
+                      <div className="w-1 h-1 rounded-full" style={{ background: event.color }}></div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-6">
+          <div className="text-sm font-semibold text-white mb-4">Upcoming Events</div>
+          <div className="space-y-2">
+            {calendarEvents.map((e, i) => (
+              <div key={i} className="p-3 rounded-xl glass hover:bg-white/5 transition cursor-pointer">
+                <div className="flex items-start gap-3">
+                  <div className="text-center min-w-[40px]">
+                    <div className="text-lg font-bold text-white">{e.date}</div>
+                    <div className="text-[10px] text-gray-500">Jul</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white">{e.title}</div>
+                    <div className="text-xs text-gray-400 font-mono mt-0.5">{e.amount}</div>
+                    <span className="tag mt-1.5" style={{ background: `${e.color}20`, color: e.color }}>{e.type}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ SETTINGS ============
+const Settings = () => {
+  const [tab, setTab] = useState('profile');
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'security', label: 'Security', icon: 'lock' },
+    { id: 'notifications', label: 'Notifications', icon: 'bell' },
+    { id: 'theme', label: 'Appearance', icon: 'moon' },
+    { id: 'accounts', label: 'Connected Accounts', icon: 'link' },
+    { id: 'language', label: 'Language', icon: 'globe' },
+  ];
+
+  return (
+    <div className="p-6 page-enter">
+      <div className="grid lg:grid-cols-4 gap-4">
+        <div className="glass rounded-2xl p-3 h-fit">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left ${tab === t.id ? 'gradient-emerald text-white' : 'text-gray-400 hover:bg-white/5'}`}>
+              <Icon name={t.icon} size={16} />
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="lg:col-span-3 glass rounded-2xl p-6">
+          {tab === 'profile' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Profile</div>
+              <div className="text-xs text-gray-400 mb-6">Manage your personal information</div>
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/5">
+                <div className="w-20 h-20 rounded-2xl gradient-emerald flex items-center justify-center text-2xl font-bold text-white">AK</div>
+                <div>
+                  <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg">Upload photo</button>
+                  <div className="text-xs text-gray-400 mt-2">JPG, PNG · Max 2MB</div>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Full name', value: 'Arjun Kumar' },
+                  { label: 'Email', value: 'arjun@atlas.app' },
+                  { label: 'Phone', value: '+91 98765 43210' },
+                  { label: 'Date of birth', value: '15 Mar 1998' },
+                  { label: 'Occupation', value: 'Software Engineer' },
+                  { label: 'City', value: 'Bangalore' },
+                ].map(f => (
+                  <div key={f.label}>
+                    <label className="text-xs text-gray-400 mb-1.5 block">{f.label}</label>
+                    <input defaultValue={f.value} className="w-full px-4 py-2.5 rounded-xl text-sm"/>
+                  </div>
+                ))}
+              </div>
+              <button className="btn-primary text-white text-sm font-medium px-6 py-2.5 rounded-xl mt-6">Save changes</button>
+            </div>
+          )}
+          {tab === 'security' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Security</div>
+              <div className="text-xs text-gray-400 mb-6">Protect your account</div>
+              <div className="space-y-4">
+                {[
+                  { title: 'Password', desc: 'Last changed 45 days ago', action: 'Change' },
+                  { title: 'Two-factor authentication', desc: 'Enabled via authenticator app', action: 'Manage', active: true },
+                  { title: 'Biometric login', desc: 'Face ID / Fingerprint enabled', action: 'Manage', active: true },
+                  { title: 'Active sessions', desc: '3 devices currently logged in', action: 'View' },
+                  { title: 'Recovery email', desc: 'arjun.backup@email.com', action: 'Edit' },
+                ].map(s => (
+                  <div key={s.title} className="flex items-center justify-between p-4 rounded-xl glass">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.active ? 'bg-emerald/10' : 'bg-white/5'}`}>
+                        <Icon name="lock" size={16} className={s.active ? 'text-emerald' : 'text-gray-400'} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">{s.title}</div>
+                        <div className="text-xs text-gray-400">{s.desc}</div>
+                      </div>
+                    </div>
+                    <button className="btn-ghost text-xs px-3 py-1.5 rounded-lg">{s.action}</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {tab === 'notifications' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Notifications</div>
+              <div className="text-xs text-gray-400 mb-6">Choose what you want to be notified about</div>
+              <div className="space-y-3">
+                {[
+                  { title: 'Transaction alerts', desc: 'Get notified for every transaction', on: true },
+                  { title: 'Bill reminders', desc: '2 days before due date', on: true },
+                  { title: 'Finn insights', desc: 'Daily financial recommendations', on: true },
+                  { title: 'Market updates', desc: 'Significant market movements', on: false },
+                  { title: 'Goal milestones', desc: 'When you reach 25%, 50%, 75%', on: true },
+                  { title: 'Product updates', desc: 'New features and improvements', on: false },
+                ].map(n => (
+                  <div key={n.title} className="flex items-center justify-between p-4 rounded-xl glass">
+                    <div>
+                      <div className="text-sm font-medium text-white">{n.title}</div>
+                      <div className="text-xs text-gray-400">{n.desc}</div>
+                    </div>
+                    <div className={`w-11 h-6 rounded-full relative cursor-pointer transition ${n.on ? 'gradient-emerald' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition ${n.on ? 'left-5' : 'left-0.5'}`}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {tab === 'theme' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Appearance</div>
+              <div className="text-xs text-gray-400 mb-6">Customize how Atlas looks</div>
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  { name: 'Midnight', active: true, bg: 'from-midnight-900 to-midnight-800' },
+                  { name: 'Graphite', active: false, bg: 'from-gray-800 to-gray-900' },
+                  { name: 'Light', active: false, bg: 'from-gray-100 to-white' },
+                ].map(t => (
+                  <div key={t.name} className={`rounded-xl p-4 cursor-pointer border-2 ${t.active ? 'border-emerald' : 'border-white/5'}`}>
+                    <div className={`h-20 rounded-lg bg-gradient-to-br ${t.bg} mb-2`}></div>
+                    <div className="text-sm text-white">{t.name}</div>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="text-sm text-white mb-3">Accent color</div>
+                <div className="flex gap-2">
+                  {['#10b981','#d4af37','#3b82f6','#8b5cf6','#ec4899','#ef4444'].map(c => (
+                    <div key={c} className={`w-10 h-10 rounded-xl cursor-pointer ${c === '#10b981' ? 'ring-2 ring-white ring-offset-2 ring-offset-midnight-900' : ''}`} style={{ background: c }}></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {tab === 'accounts' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Connected Accounts</div>
+              <div className="text-xs text-gray-400 mb-6">Manage your linked bank accounts and services</div>
+              <div className="space-y-3">
+                {[
+                  { name: 'HDFC Bank', type: 'Primary · Savings', status: 'connected', color: '#10b981' },
+                  { name: 'ICICI Bank', type: 'Salary Account', status: 'connected', color: '#3b82f6' },
+                  { name: 'Zerodha', type: 'Investments', status: 'connected', color: '#d4af37' },
+                  { name: 'Groww', type: 'Mutual Funds', status: 'pending', color: '#8b5cf6' },
+                ].map(a => (
+                  <div key={a.name} className="flex items-center justify-between p-4 rounded-xl glass">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${a.color}15` }}>
+                        <Icon name="building" size={16} style={{ color: a.color }} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">{a.name}</div>
+                        <div className="text-xs text-gray-400">{a.type}</div>
+                      </div>
+                    </div>
+                    <button className={`tag ${a.status === 'connected' ? 'bg-emerald/10 text-emerald' : 'bg-gold/10 text-gold'}`}>
+                      {a.status}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button className="btn-ghost text-sm px-4 py-2 rounded-xl mt-4 flex items-center gap-2">
+                <Icon name="plus" size={14} /> Connect new account
+              </button>
+            </div>
+          )}
+          {tab === 'language' && (
+            <div>
+              <div className="text-lg font-bold text-white mb-1">Language & Region</div>
+              <div className="text-xs text-gray-400 mb-6">Localization preferences</div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Language</label>
+                  <select className="w-full px-4 py-2.5 rounded-xl text-sm">
+                    <option>English (US)</option>
+                    <option>English (UK)</option>
+                    <option>हिन्दी</option>
+                    <option>தமிழ்</option>
+                    <option>తెలుగు</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Currency</label>
+                  <select className="w-full px-4 py-2.5 rounded-xl text-sm">
+                    <option>₹ Indian Rupee (INR)</option>
+                    <option>$ US Dollar (USD)</option>
+                    <option>€ Euro (EUR)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Date format</label>
+                  <select className="w-full px-4 py-2.5 rounded-xl text-sm">
+                    <option>DD MMM YYYY (16 Jul 2026)</option>
+                    <option>MM/DD/YYYY</option>
+                    <option>YYYY-MM-DD</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============ SIMPLE PAGES ============
+const SimplePage = ({ title, subtitle, icon, content }) => (
+  <div className="p-6 page-enter">
+    <div className="glass-strong rounded-2xl p-8 text-center">
+      <div className="w-16 h-16 mx-auto rounded-2xl gradient-emerald flex items-center justify-center shadow-glow-emerald mb-4">
+        <Icon name={icon} size={28} className="text-white" />
+      </div>
+      <h2 className="text-2xl font-bold gradient-text mb-2">{title}</h2>
+      <p className="text-gray-400 mb-6 max-w-md mx-auto">{subtitle}</p>
+      {content}
+    </div>
+  </div>
+);
+
+const Profile = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="glass-strong rounded-2xl p-8">
+      <div className="flex items-center gap-6 mb-6 pb-6 border-b border-white/5">
+        <div className="w-24 h-24 rounded-2xl gradient-emerald flex items-center justify-center text-3xl font-bold text-white shadow-glow-emerald">AK</div>
+        <div className="flex-1">
+          <div className="text-2xl font-bold text-white">Arjun Kumar</div>
+          <div className="text-sm text-gray-400">Software Engineer · Bangalore</div>
+          <div className="flex gap-2 mt-3">
+            <span className="tag bg-emerald/10 text-emerald">Premium Member</span>
+            <span className="tag bg-gold/10 text-gold">Since Jan 2026</span>
+          </div>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-4 gap-3">
+        {[
+          { label: 'Health Score', value: '847/1000', color: '#10b981' },
+          { label: 'Net Worth', value: '₹48.24L', color: '#d4af37' },
+          { label: 'Active Goals', value: '5', color: '#3b82f6' },
+          { label: 'Documents', value: '24', color: '#8b5cf6' },
+        ].map(s => (
+          <div key={s.label} className="glass rounded-xl p-4">
+            <div className="text-xs text-gray-400 mb-1">{s.label}</div>
+            <div className="text-xl font-bold" style={{ color: s.color }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const IncomeManager = () => (
+  <div className="p-6 space-y-4 page-enter">
+    <div className="grid lg:grid-cols-4 gap-4">
+      {[
+        { label: 'Total Income', value: '₹1,25,500', sub: 'This month', icon: 'trending', color: '#10b981' },
+        { label: 'Salary', value: '₹95,000', sub: 'Credited Jul 1', icon: 'briefcase', color: '#d4af37' },
+        { label: 'Freelance', value: '₹18,500', sub: '3 projects', icon: 'code', color: '#3b82f6' },
+        { label: 'Other', value: '₹12,000', sub: 'Rent + dividends', icon: 'home', color: '#8b5cf6' },
+      ].map((m,i) => (
+        <div key={i} className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-gray-400">{m.label}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+              <Icon name={m.icon} size={14} style={{ color: m.color }} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white">{m.value}</div>
+          <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+        </div>
+      ))}
+    </div>
+    <div className="glass rounded-2xl p-6">
+      <div className="text-sm font-semibold text-white mb-4">Income Sources</div>
+      <div className="space-y-2">
+        {[
+          { name: 'Primary Salary', company: 'TechCorp Pvt Ltd', amount: 95000, freq: 'Monthly', date: '1st', color: '#10b981' },
+          { name: 'Freelance - Web Dev', company: 'Multiple Clients', amount: 18500, freq: 'Variable', date: 'Ongoing', color: '#3b82f6' },
+          { name: 'Rental Income', company: 'Apartment - Bangalore', amount: 10000, freq: 'Monthly', date: '5th', color: '#d4af37' },
+          { name: 'Dividends', company: 'Mutual Funds', amount: 2000, freq: 'Quarterly', date: 'Last qtr', color: '#8b5cf6' },
+        ].map((s, i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}15` }}>
+              <Icon name="trending" size={16} style={{ color: s.color }} />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm text-white">{s.name}</div>
+              <div className="text-xs text-gray-400">{s.company} · {s.freq}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-semibold text-white font-mono">₹{s.amount.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">{s.date}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const Notifications = () => (
+  <div className="p-6 page-enter">
+    <div className="glass rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-sm font-semibold text-white">All Notifications</div>
+        <button className="text-xs text-emerald">Mark all as read</button>
+      </div>
+      <div className="space-y-2">
+        {[
+          { title: 'Credit card bill due in 2 days', desc: 'HDFC Millennia · ₹18,240', time: '1h ago', type: 'alert', read: false },
+          { title: 'Finn found a saving opportunity', desc: 'Save ₹8,400/month on home loan', time: '3h ago', type: 'insight', read: false },
+          { title: 'SIP successful', desc: '₹15,000 invested in Nifty 50 Index', time: '1d ago', type: 'success', read: true },
+          { title: 'Salary credited', desc: '₹95,000 from TechCorp', time: '2d ago', type: 'success', read: true },
+          { title: 'Insurance renewal reminder', desc: 'Health insurance due Aug 15', time: '3d ago', type: 'alert', read: true },
+          { title: 'New market insight', desc: 'Gold hits all-time high', time: '4d ago', type: 'info', read: true },
+        ].map((n, i) => (
+          <div key={i} className={`flex items-start gap-3 p-3 rounded-xl hover:bg-white/3 transition cursor-pointer ${!n.read ? 'bg-white/3' : ''}`}>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              n.type === 'alert' ? 'bg-red-500/10 text-red-400' :
+              n.type === 'insight' ? 'bg-emerald/10 text-emerald' :
+              n.type === 'success' ? 'bg-emerald/10 text-emerald' :
+              'bg-blue-500/10 text-blue-400'
+            }`}>
+              <Icon name={n.type === 'alert' ? 'alert' : n.type === 'insight' ? 'sparkles' : n.type === 'success' ? 'check' : 'info'} size={16} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-white font-medium">{n.title}</div>
+                {!n.read && <span className="w-2 h-2 rounded-full bg-emerald"></span>}
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">{n.desc}</div>
+              <div className="text-[10px] text-gray-500 mt-1">{n.time}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const Support = () => (
+  <div className="p-6 page-enter">
+    <div className="grid lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2 glass rounded-2xl p-6">
+        <div className="text-lg font-bold text-white mb-4">How can we help?</div>
+        <div className="grid md:grid-cols-2 gap-3 mb-6">
+          {[
+            { icon: 'book', title: 'Help Center', desc: 'Browse articles & guides' },
+            { icon: 'message', title: 'Live Chat', desc: 'Talk to our team' },
+            { icon: 'mail', title: 'Email Support', desc: 'support@atlas.app' },
+            { icon: 'users', title: 'Community', desc: 'Join 50K+ users' },
+          ].map(h => (
+            <div key={h.title} className="glass rounded-xl p-4 hover:bg-white/5 transition cursor-pointer">
+              <div className="w-10 h-10 rounded-xl gradient-emerald flex items-center justify-center mb-3">
+                <Icon name={h.icon} size={18} className="text-white" />
+              </div>
+              <div className="text-sm font-semibold text-white">{h.title}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{h.desc}</div>
+            </div>
+          ))}
+        </div>
+        <div className="text-sm font-semibold text-white mb-3">Frequently Asked</div>
+        <div className="space-y-2">
+          {[
+            'How is my data secured?',
+            'Can I connect multiple bank accounts?',
+            'How does Finn generate recommendations?',
+            'What is the Financial Health Score?',
+          ].map(q => (
+            <div key={q} className="p-3 rounded-xl glass hover:bg-white/5 transition cursor-pointer flex items-center justify-between">
+              <span className="text-sm text-gray-300">{q}</span>
+              <Icon name="chevronRight" size={14} className="text-gray-400" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="glass rounded-2xl p-6">
+        <div className="text-sm font-semibold text-white mb-4">Contact us</div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-1.5 block">Subject</label>
+            <input placeholder="How can we help?" className="w-full px-4 py-2.5 rounded-xl text-sm"/>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1.5 block">Message</label>
+            <textarea rows="5" placeholder="Describe your issue..." className="w-full px-4 py-2.5 rounded-xl text-sm resize-none"></textarea>
+          </div>
+          <button className="w-full btn-primary text-white text-sm font-medium py-2.5 rounded-xl">Send message</button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ============ MAIN APP ============
+const App = () => {
+  const [view, setView] = useState('landing'); // landing, auth, onboarding, app
+  const [current, setCurrent] = useState('dashboard');
+  const [collapsed, setCollapsed] = useState(false);
+
+  const pageConfig = {
+    dashboard: { title: 'Dashboard', subtitle: 'Your financial command center', component: Dashboard },
+    finn: { title: 'Finn AI Advisor', subtitle: 'Your AI financial companion', component: FinnAdvisor },
+    agents: { title: 'Multi-Agent Panel', subtitle: '9 specialized agents at work', component: AgentsPanel },
+    profile: { title: 'Financial Profile', subtitle: 'Your complete financial identity', component: Profile },
+    budget: { title: 'Budget Planner', subtitle: 'Track and optimize your spending', component: BudgetPlanner },
+    expenses: { title: 'Expense Tracker', subtitle: 'Every rupee accounted for', component: ExpenseTracker },
+    income: { title: 'Income Manager', subtitle: 'All your income sources', component: IncomeManager },
+    loans: { title: 'Loan Analyzer', subtitle: 'AI-powered loan analysis', component: LoanAnalyzer },
+    investments: { title: 'Investment Planner', subtitle: 'Grow your wealth intelligently', component: InvestmentPlanner },
+    insurance: { title: 'Insurance Analysis', subtitle: 'Coverage review & recommendations', component: Insurance },
+    tax: { title: 'Tax Planner', subtitle: 'Optimize your tax liability', component: TaxPlanner },
+    goals: { title: 'Goal Planner', subtitle: 'Achieve your financial dreams', component: Goals },
+    reports: { title: 'Financial Reports', subtitle: 'Comprehensive insights', component: Reports },
+    documents: { title: 'Documents', subtitle: 'Secure document management', component: Documents },
+    notifications: { title: 'Notifications', subtitle: 'Stay updated', component: Notifications },
+    calendar: { title: 'Calendar', subtitle: 'Financial events & deadlines', component: Calendar },
+    support: { title: 'Support', subtitle: 'We\'re here to help', component: Support },
+    settings: { title: 'Settings', subtitle: 'Customize your experience', component: Settings },
+  };
+
+  const Page = pageConfig[current].component;
+
+  if (view === 'landing') return <LandingPage onEnter={() => setView('auth')} />;
+  if (view === 'auth') return <AuthScreen onComplete={() => setView('onboarding')} />;
+  if (view === 'onboarding') return <Onboarding onComplete={() => setView('app')} />;
+
+  return (
+    <div className="min-h-screen bg-midnight-950 flex">
+      <div className="absolute inset-0 gradient-mesh opacity-30 pointer-events-none"></div>
+      <Sidebar current={current} setCurrent={setCurrent} collapsed={collapsed} setCollapsed={setCollapsed} />
+      <main className="flex-1 relative min-w-0">
+        <TopBar title={pageConfig[current].title} subtitle={pageConfig[current].subtitle} />
+        <Page />
+      </main>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
 </body>
 </html>
